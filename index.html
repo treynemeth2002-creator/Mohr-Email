@@ -189,6 +189,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
 .set-field textarea{resize:vertical;min-height:90px;line-height:1.6}
 .tone-options{display:flex;gap:10px;flex-wrap:wrap}
 .tone-opt{padding:9px 18px;border-radius:8px;border:1.5px solid var(--gl);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;color:var(--ts)}.tone-opt:hover{border-color:var(--gold)}.tone-opt.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.tone-chip{padding:7px 14px;border-radius:20px;border:1.5px solid rgba(255,255,255,.2);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;color:rgba(255,255,255,.6);background:rgba(255,255,255,.06)}.tone-chip:hover{border-color:var(--gold);color:var(--gold2)}.tone-chip.on{background:var(--gold);border-color:var(--gold);color:var(--navy3);font-weight:700}
 .save-btn{background:var(--navy);color:#fff;border:none;border-radius:8px;padding:11px 24px;font-size:13px;font-weight:700;cursor:pointer;transition:background .2s;margin-top:8px}.save-btn:hover{background:var(--navy2)}
 .api-row{display:flex;gap:10px;align-items:flex-end}
 .api-row .set-field{flex:1;margin:0}
@@ -262,6 +263,80 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
     </div>
   </div>
 </div>
+
+<!-- EDIT PROFILE MODAL -->
+<div class="overlay" id="editProfileOverlay" style="display:none">
+  <div class="pin-box" id="editPinStep">
+    <div class="pin-av" id="editPinAv"></div>
+    <div class="pin-name" id="editPinName"></div>
+    <div style="font-size:12px;color:var(--gm);margin-bottom:16px">Enter your PIN to edit this profile</div>
+    <div class="pin-dots"><div class="pd" id="epd0"></div><div class="pd" id="epd1"></div><div class="pd" id="epd2"></div><div class="pd" id="epd3"></div></div>
+    <div class="pin-kp">
+      <button type="button" class="pk" onclick="editPinKey(1)">1</button><button type="button" class="pk" onclick="editPinKey(2)">2</button><button type="button" class="pk" onclick="editPinKey(3)">3</button>
+      <button type="button" class="pk" onclick="editPinKey(4)">4</button><button type="button" class="pk" onclick="editPinKey(5)">5</button><button type="button" class="pk" onclick="editPinKey(6)">6</button>
+      <button type="button" class="pk" onclick="editPinKey(7)">7</button><button type="button" class="pk" onclick="editPinKey(8)">8</button><button type="button" class="pk" onclick="editPinKey(9)">9</button>
+      <button type="button" class="pk"></button><button type="button" class="pk" onclick="editPinKey(0)">0</button><button type="button" class="pk del" onclick="editPinDel()">&#x232B;</button>
+    </div>
+    <div class="pin-err" id="editPinErr"></div>
+    <button type="button" class="pin-cancel" onclick="closeEditProfile()">&#8592; Cancel</button>
+  </div>
+  <div class="add-box" id="editFormStep" style="display:none">
+    <h2>Edit Profile</h2>
+    <label>Full Name</label><input type="text" id="editName" placeholder="Trey Nemeth">
+    <label>Title</label><input type="text" id="editTitle" placeholder="BD Associate">
+    <label>New PIN (4 digits — leave blank to keep current)</label>
+    <input type="password" id="editPin" maxlength="4" placeholder="Leave blank to keep current PIN">
+    <label>Remove PIN</label>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+      <input type="checkbox" id="editRemovePin" style="width:auto;margin:0">
+      <span style="color:var(--gm);font-size:13px">Remove PIN from this profile</span>
+    </div>
+    <label>Color</label>
+    <div class="swatch-row" id="editSwatchRow"></div>
+    <div class="btn-row">
+      <button type="button" class="btn-o" onclick="closeEditProfile()">Cancel</button>
+      <button type="button" class="btn-g" onclick="saveEditProfile()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRE-GENERATE MODAL -->
+<div class="overlay" id="preGenOverlay" style="display:none">
+  <div class="add-box" style="width:420px">
+    <h2 style="margin-bottom:6px">Generate Email</h2>
+    <div style="color:var(--gm);font-size:12px;margin-bottom:20px">Customize how this email sounds before generating</div>
+
+    <label>Tone</label>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px" id="preGenToneRow">
+      <button type="button" class="tone-chip on" onclick="selectPreGenTone(this,'casual')">&#128075; Casual</button>
+      <button type="button" class="tone-chip" onclick="selectPreGenTone(this,'conversational')">&#128172; Conversational</button>
+      <button type="button" class="tone-chip" onclick="selectPreGenTone(this,'formal')">&#128084; Formal</button>
+      <button type="button" class="tone-chip" onclick="selectPreGenTone(this,'direct')">&#9889; Direct &amp; Short</button>
+    </div>
+
+    <label>How human should it sound?</label>
+    <div style="margin-bottom:6px;display:flex;justify-content:space-between;font-size:11px;color:var(--gm)">
+      <span>Very human</span><span>Balanced</span><span>AI-polished</span>
+    </div>
+    <input type="range" id="preGenHumanSlider" min="1" max="3" value="2" step="1"
+      style="width:100%;margin-bottom:6px;accent-color:var(--gold)"
+      oninput="updateHumanLabel(this.value)">
+    <div style="font-size:12px;color:var(--gm);margin-bottom:18px;min-height:32px" id="humanLabel">Balanced — professional but natural, minimal AI-isms</div>
+
+    <label>Length</label>
+    <div style="display:flex;gap:8px;margin-bottom:20px" id="preGenLengthRow">
+      <button type="button" class="tone-chip on" onclick="selectPreGenLength(this,'short')">Short (&lt;120 words)</button>
+      <button type="button" class="tone-chip" onclick="selectPreGenLength(this,'medium')">Medium (~180 words)</button>
+      <button type="button" class="tone-chip" onclick="selectPreGenLength(this,'long')">Long (~250 words)</button>
+    </div>
+
+    <div class="btn-row">
+      <button type="button" class="btn-o" onclick="closePreGen()">Cancel</button>
+      <button type="button" class="btn-g" onclick="confirmGenerate()">&#9889; Generate</button>
+    </div>
+  </div>
+</div>
+
 <div id="mainApp">
   <nav class="topnav">
     <div class="nav-brand">
@@ -830,7 +905,15 @@ function saveProfiles(p){localStorage.setItem("profiles",JSON.stringify(p))}
 function renderProfileScreen(){
   const g=document.getElementById("profilesGrid");
   const profiles=getProfiles();
-  g.innerHTML=profiles.map((p,i)=>`<div class="pc" onclick="selectProfile(${i})"><div class="pa c${p.color}">${p.name.slice(0,2).toUpperCase()}</div><div class="pn">${p.name}</div></div>`).join("")+
+  g.innerHTML=profiles.map((p,i)=>`
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0;position:relative">
+      <div class="pc" onclick="selectProfile(${i})">
+        <div class="pa c${p.color}">${p.name.slice(0,2).toUpperCase()}</div>
+        <div class="pn">${p.name}</div>
+        ${p.pin?'<div style="font-size:10px;color:var(--gm);margin-top:2px">&#128274; PIN</div>':'<div style="font-size:10px;color:var(--gm);margin-top:2px">No PIN</div>'}
+      </div>
+      <button type="button" onclick="event.stopPropagation();openEditProfile(${i})" style="margin-top:6px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.5);border-radius:6px;padding:3px 12px;font-size:11px;cursor:pointer;transition:all .15s" onmouseover="this.style.color='#fff';this.style.borderColor='rgba(255,255,255,.5)'" onmouseout="this.style.color='rgba(255,255,255,.5)';this.style.borderColor='rgba(255,255,255,.2)'">Edit</button>
+    </div>`).join("")+
   `<div class="pc" onclick="openAddProfile()"><div class="pa add-pa">+</div><div class="pn">Add Profile</div></div>`;
 }
 
@@ -942,7 +1025,7 @@ function renderFollowUps(){
   const fus=pGet("followups")||{};
   const today=new Date();today.setHours(0,0,0,0);
   const items=Object.entries(fus).map(([corId,data])=>{
-    const co=COS.find(c=>c.id==corId);if(!co||!data.date)return null;
+    const co=COS_ALL().find(c=>c.id==corId);if(!co||!data.date)return null;
     const d=new Date(data.date);d.setHours(0,0,0,0);
     const diff=Math.round((d-today)/(1000*60*60*24));
     const cls=diff<0?"ov":diff===0?"td":"up";
@@ -1011,7 +1094,7 @@ function renderCORBody(c,stage){
     <div class="draft-hdr">
       <div><div class="draft-title">Email Sequence</div>
       <div class="seq-tabs">${["Touch 1 \u2014 Cold","Touch 2 \u2014 Follow-Up","Touch 3 \u2014 Breakup"].map((t,i)=>`<button type="button" class="seq-tab${i===seqTab?" on":""}" onclick="setSeqTab(${c.id},${i})">${t}</button>`).join("")}</div></div>
-      <button type="button" class="gen-btn" id="genBtn-${c.id}" onclick="generateEmail(${c.id})">&#9889; Generate</button>
+      <button type="button" class="gen-btn" id="genBtn-${c.id}" onclick="openPreGen(${c.id})">&#9889; Generate</button>
     </div>
     <div class="draft-inner">
       <div class="gen-state" id="gen-state-${c.id}"><div class="spin"></div> Drafting...</div>
@@ -1043,7 +1126,7 @@ function toggleCOR(id){
 }
 
 function toggleContact(corId,idx){
-  const c=COS.find(co=>co.id===corId);if(!c)return;
+  const c=COS_ALL().find(co=>co.id===corId);if(!c)return;
   const ct=c.contacts[idx];const k=ct.email||ct.name;
   let sel=pGet("selContacts_"+corId)||[];
   sel.includes(k)?sel=sel.filter(x=>x!==k):sel.push(k);
@@ -1053,12 +1136,12 @@ function toggleContact(corId,idx){
 }
 function setAngle(corId,angle){
   pSet("angle_"+corId,angle);
-  const c=COS.find(co=>co.id===corId);if(!c)return;
+  const c=COS_ALL().find(co=>co.id===corId);if(!c)return;
   const b=document.getElementById("crb-"+corId);if(b)b.innerHTML=renderCORBody(c,getPipelineData()[corId]||"Cold");
 }
 function setSeqTab(corId,tab){
   pSet("seqtab_"+corId,tab);
-  const c=COS.find(co=>co.id===corId);if(!c)return;
+  const c=COS_ALL().find(co=>co.id===corId);if(!c)return;
   const b=document.getElementById("crb-"+corId);if(b)b.innerHTML=renderCORBody(c,getPipelineData()[corId]||"Cold");
 }
 function setFollowUp(corId,date){
@@ -1070,8 +1153,8 @@ function saveDraftBody(corId,tab,val){const b=pGet("draft_bodies_"+corId)||["","
 function getAPIKey(){return pGet("apikey")||""}
 const TOUCH_PROMPTS=["Write a cold outreach email (first touch).","Write a follow-up email (second touch, referencing first outreach was sent approximately 1 week ago).","Write a short breakup email (third touch — brief, friendly, low-pressure, leaves door open for future)."];
 
-async function generateEmail(corId){
-  const c=COS.find(co=>co.id===corId);if(!c)return;
+async function generateEmail(corId, preGenTone, preGenHuman, preGenLength){
+  const c=COS_ALL().find(co=>co.id===corId);if(!c)return;
   const apiKey=getAPIKey();
   if(!apiKey){showToast("Add API key in Settings \u2192 API Key");return}
   const btn=document.getElementById("genBtn-"+corId);
@@ -1085,13 +1168,42 @@ async function generateEmail(corId){
   const tRole=tcts.length>0?tcts[0].role:"Decision Maker";
   const angle=pGet("angle_"+corId)||c.problems[0];
   const seqTab=pGet("seqtab_"+corId)||0;
-  const prefs=pGet("emailPrefs")||{};
-  const tone=prefs.tone||"conversational";
-  const sig=pGet("signature")||"Trey Nemeth | Mohr Partners";
+  const sig=pGet("signature")||"";
   const settings=pGet("profileSettings")||{};
   const senderName=settings.name||currentProfile?.name||"Trey Nemeth";
-  const fmtInstr = emailFormat==='linkedin' ? 'FORMAT: LinkedIn InMail/connection request. Max 150 words. Conversational, direct. No formal sign-off.' : emailFormat==='call' ? 'FORMAT: Call script with: opening line, 1-sentence value prop, 2 discovery questions, CTA. Use Script: not Subject:.' : 'FORMAT: Cold email.';
-  const prompt=`You are writing BD outreach for ${senderName} at Mohr Partners — the largest tenant rep MBE in the US. Tenant rep only (zero landlord conflicts). Services: lease admin, CAM audits, BI/site selection, Bill Pay (JP Morgan largest bill pay client), international (CDN Global, Carter Jonas, Citius AG).\n\nIMPORTANT: Context below is background only. Do NOT cite specific numbers (location counts, revenue, etc.) as verified facts — reference qualitatively (e.g. "large national footprint" not a specific count).\n\nCompany: ${c.name} | Sector: ${c.cat} | HQ: ${c.hq}\nTarget: ${tName} (${tRole})\nPitch angle: ${angle} | Tone: ${tone}\nBackground: ${c.problem}\n${fmtInstr}\n${TOUCH_PROMPTS[seqTab]}\n\nOutput: Subject: [line]\\n\\n[body] — Under 200 words — No bullets, flowing prose — One timely trigger from context — Low-pressure CTA — Sign off: ${senderName} | Mohr Partners${sig?"\\n"+sig:""} — Start with Subject:`; 
+
+  // Use pre-gen params if provided, else fall back to settings
+  const tone = preGenTone || (pGet("emailPrefs")||{}).tone || "conversational";
+  const humanLevel = preGenHuman !== undefined ? preGenHuman : 2;
+  const lengthPref = preGenLength || 'short';
+
+  const wordCounts = {short:'under 120 words', medium:'around 160-180 words', long:'around 220-250 words'};
+  const wordCount = wordCounts[lengthPref] || 'under 150 words';
+
+  const humanInstructions = humanLevel === 1
+    ? `HUMAN VOICE (critical): Write exactly like a real 24-year-old BD guy would text a colleague. Short punchy sentences. No em-dashes (—) at all. No semicolons. No "I hope this finds you well" or any cliche openers. No overly formal transitions. Imperfect is fine. Use contractions (I'm, you're, we've). Occasional sentence fragments are okay. Zero AI-isms.`
+    : humanLevel === 2
+    ? `NATURAL VOICE: Write like a real person, not AI. Avoid em-dashes (—). Avoid semicolons. No cliche email openers. Use contractions. Keep sentences varied in length. Should feel like a thoughtful person wrote this, not a language model.`
+    : `PROFESSIONAL VOICE: Clear and polished but still human. Avoid overused phrases. No em-dashes. Contractions are fine.`;
+
+  const fmtInstr = emailFormat==='linkedin' ? 'FORMAT: LinkedIn InMail or connection request. Max 120 words. Conversational, direct. No formal sign-off.' : emailFormat==='call' ? 'FORMAT: Call script with: opening line, 1-sentence value prop, 2 discovery questions, CTA. Use Script: not Subject:.' : 'FORMAT: Cold email.';
+
+  const prompt=`You are writing BD outreach for ${senderName} at Mohr Partners — the largest tenant rep MBE in the US. Tenant rep only (zero landlord conflicts). Services: lease admin, CAM audits, BI/site selection, Bill Pay (JP Morgan largest bill pay client), international (CDN Global, Carter Jonas, Citius AG).
+
+IMPORTANT: Context below is background only. Do NOT cite specific numbers as verified facts. Reference qualitatively ("large national footprint" not a specific count).
+
+Company: ${c.name} | Sector: ${c.cat} | HQ: ${c.hq}
+Target: ${tName} (${tRole})
+Pitch angle: ${angle} | Tone: ${tone}
+Background: ${c.problem}
+
+${humanInstructions}
+
+Length: ${wordCount}
+${fmtInstr}
+${TOUCH_PROMPTS[seqTab]}
+
+Output: Subject: [line]\n\n[body] — No bullets, flowing prose — One timely trigger from context — Low-pressure CTA — Sign off: ${senderName} | Mohr Partners${sig?"\n"+sig:""} — Start with Subject:`;
   try{
     const resp=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,messages:[{role:"user",content:prompt}]})});
     const data=await resp.json();
@@ -1126,7 +1238,7 @@ function openOutlook(corId){
   setStageCOR(corId,"Contacted");showToast("Opening Outlook...");
 }
 function copyLogEntry(corId){
-  const c=COS.find(co=>co.id===corId);if(!c)return;
+  const c=COS_ALL().find(co=>co.id===corId);if(!c)return;
   const s=(document.getElementById("subj-"+corId)||{}).value||"";
   const t=pGet("seqtab_"+corId)||0;
   const b=(document.getElementById("body-"+corId+"-"+t)||{}).value||"";
@@ -1138,7 +1250,7 @@ function copyLogEntry(corId){
   navigator.clipboard.writeText(row).then(()=>showToast("Log entry copied \u2014 paste into Activity Log!"));
 }
 function addToQueue(corId){
-  const c=COS.find(co=>co.id===corId);if(!c)return;
+  const c=COS_ALL().find(co=>co.id===corId);if(!c)return;
   const to=(document.getElementById("to-"+corId)||{}).value||"";
   const s=(document.getElementById("subj-"+corId)||{}).value||"";
   const t=pGet("seqtab_"+corId)||0;
@@ -1156,13 +1268,48 @@ function sendFromQueue(id){const e=emailQueue.find(x=>x.id===id);if(!e)return;wi
 function removeFromQueue(id){emailQueue=emailQueue.filter(x=>x.id!==id);renderQueue();renderDashboard()}
 function sendAll(){if(!emailQueue.length){showToast("Queue is empty");return}emailQueue.forEach((e,i)=>setTimeout(()=>window.open("mailto:"+encodeURIComponent(e.to)+"?subject="+encodeURIComponent(e.subject)+"&body="+encodeURIComponent(e.body),"_blank"),i*600));showToast("Opening "+emailQueue.length+" emails...")}
 
+let _dragCorId=null;
+function dragCard(event,corId){
+  _dragCorId=corId;
+  event.dataTransfer.effectAllowed='move';
+  setTimeout(()=>{const el=event.target.closest('.pl-card');if(el)el.style.opacity='0.4';},0);
+}
+function dropCard(event,stageIndex){
+  event.preventDefault();
+  document.querySelectorAll('.pl-cards').forEach(el=>el.style.background='');
+  if(_dragCorId===null)return;
+  const newStage=STAGES[stageIndex];
+  setStageCOR(_dragCorId,newStage);
+  _dragCorId=null;
+  renderPipeline();
+  showToast('Moved to '+newStage);
+}
 function renderPipeline(){
   const pd=getPipelineData();
   const cf=document.getElementById("pipeFilter")?.value||"All Categories";
   const filtered=COS_ALL().filter(c=>cf==="All Categories"||c.cat===cf);
   document.getElementById("pipelineBoard").innerHTML=STAGES.map((s,si)=>{
     const cards=filtered.filter(c=>(pd[c.id]||"Cold")===s);
-    return`<div class="pl-col"><div class="pl-col-hdr ${SC[si]}">${s}<span class="pl-cnt">${cards.length}</span></div><div class="pl-cards">${cards.map(c=>`<div class="pl-card ${PC[si]}" onclick="goToEmailEngine(${c.id})"><div class="pl-co">${c.name}</div><div class="pl-ct">${c.cat} \u00b7 ${c.locs}+ locs</div><div class="pl-date">${c.rev}</div></div>`).join("")}</div></div>`;
+    const sci=si; // capture for closure
+    return`<div class="pl-col"
+      ondragover="event.preventDefault();this.querySelector('.pl-cards').style.background='rgba(200,151,43,.12)'"
+      ondragleave="this.querySelector('.pl-cards').style.background=''"
+      ondrop="dropCard(event,${sci})">
+      <div class="pl-col-hdr ${SC[si]}">${s}<span class="pl-cnt">${cards.length}</span></div>
+      <div class="pl-cards">${cards.map(c=>`<div class="pl-card ${PC[si]}"
+        draggable="true"
+        ondragstart="dragCard(event,${c.id})"
+        ondragend="this.style.opacity='1';document.querySelectorAll('.pl-cards').forEach(el=>el.style.background='')"
+        onclick="goToEmailEngine(${c.id})"
+        style="cursor:grab;user-select:none">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div class="pl-co">${c.name}</div>
+          <span style="color:var(--gm);font-size:14px;letter-spacing:-2px">&#8942;&#8942;</span>
+        </div>
+        <div class="pl-ct">${c.cat}</div>
+        <div class="pl-date">${c.rev}</div>
+      </div>`).join("")}</div>
+    </div>`;
   }).join("");
 }
 function goToEmailEngine(corId){
@@ -1182,13 +1329,13 @@ function renderNoteList(){
   list.innerHTML=items.map(c=>{const n=notes[c.id];const prev=(n.text||"").slice(0,55).replace(/\n/g," ");return`<div class="note-item${notesCurrent===c.id?" on":""}" onclick="openNote(${c.id})"><div class="ni-co">${c.name}</div><div class="ni-prev">${prev}...</div><div class="ni-date">${n.updated||""}</div></div>`}).join("");
 }
 function openNote(corId){
-  notesCurrent=corId;const c=COS.find(co=>co.id===corId);const notes=getNotes();
+  notesCurrent=corId;const c=COS_ALL().find(co=>co.id===corId);const notes=getNotes();
   document.getElementById("noteTitle").textContent=c.name;
   document.getElementById("noteDate").textContent=notes[corId]?.updated||"";
   document.getElementById("noteTA").value=notes[corId]?.text||"";
   renderNoteList();
 }
-function newNote(){const co=COS.find(c=>!getNotes()[c.id]?.text);if(co)openNote(co.id)}
+function newNote(){const co=COS_ALL().find(c=>!getNotes()[c.id]?.text);if(co)openNote(co.id)}
 function saveCurrentNote(){
   if(!notesCurrent)return;const text=document.getElementById("noteTA").value;const notes=getNotes();
   const now=new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
@@ -1211,7 +1358,7 @@ function openAddWL(){
 function closeWL(){document.getElementById("wlOverlay").style.display="none"}
 function saveWL(){
   const corId=document.getElementById("wlCo").value;
-  const c=COS.find(co=>co.id==corId)||{name:"Unknown"};
+  const c=COS_ALL().find(co=>co.id==corId)||{name:"Unknown"};
   const entry={id:Date.now(),company:c.name,contact:document.getElementById("wlContact").value,angle:document.getElementById("wlAngle").value,outcome:document.getElementById("wlOutcome").value,notes:document.getElementById("wlNotes").value,date:new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})};
   const wl=getWL();wl.unshift(entry);pSet("winloss",wl);closeWL();renderWL();showToast("Outcome logged!");
 }
@@ -1579,7 +1726,7 @@ async function bulkGenerate(){
 // CALL PREP SHEET
 // ════════════════════════════════════════════════════════════════
 async function openCallPrep(corId){
-  const c=COS.find(co=>co.id===corId);if(!c)return;
+  const c=COS_ALL().find(co=>co.id===corId);if(!c)return;
   const apiKey=getAPIKey();
   document.getElementById('cpTitle').textContent=c.name+' — Call Prep';
   document.getElementById('cpContent').innerHTML='<div style="display:flex;align-items:center;gap:8px;color:var(--ts)"><div class="spin" style="border-top-color:var(--navy)"></div>Generating your call prep sheet...</div>';
@@ -1881,6 +2028,36 @@ function formatNewsText(text){
   return text.replace(/\n\n/g,'</p><p style="margin-top:10px">').replace(/\n/g,'<br>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/^/,'<p>').replace(/$/,'</p>');
 }
 
+async function runNewsSearch(companyName, category, hq, background, maxTokens){
+  // Uses Claude knowledge — no web search tool needed (not supported in browser direct access)
+  const apiKey=getAPIKey();
+  const prompt=`You are a commercial real estate research assistant helping a tenant rep broker at Mohr Partners prepare for BD outreach.
+
+Company: ${companyName}
+Sector: ${category}
+HQ: ${hq||'US'}
+Context: ${background||''}
+
+Based on what you know about this company, provide a CRE-relevant intelligence briefing covering:
+
+1. **Recent Activity** — Any known expansions, facility openings/closures, acquisitions, or real estate moves in the past 1-2 years
+2. **Leadership & Strategy** — Recent leadership changes, cost-cutting initiatives, restructuring, or strategic pivots that affect real estate
+3. **Growth Signals** — Signs of expansion, new markets, de novo activity, or portfolio growth
+4. **Risk Flags** — Any downsizing, consolidations, financial stress, or lease issues worth knowing
+5. **Mohr Opportunity** — 1-2 sentences on the strongest tenant rep angle given the above
+
+Be specific where you have knowledge. If you have limited info on this specific company, say so and focus on what you do know about the sector trends that apply. Keep the whole thing under 300 words. Use plain text, no markdown headers, no em dashes.`;
+
+  const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:maxTokens||900,messages:[{role:'user',content:prompt}]})
+  });
+  const data=await resp.json();
+  if(!resp.ok) throw new Error((data?.error?.message)||'API error '+resp.status);
+  return (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim()||'No information found.';
+}
+
 async function scanOneNews(corId, btn){
   const c=COS_ALL().find(co=>co.id==corId);
   if(!c)return;
@@ -1888,19 +2065,9 @@ async function scanOneNews(corId, btn){
   if(!apiKey){showToast('Add API key in Settings first');return}
   if(btn){btn.disabled=true;btn.textContent='Scanning...';}
   try{
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-6',max_tokens:1200,
-        tools:[{"type":"web_search_20250305","name":"web_search"}],
-        messages:[{role:'user',content:`Search for recent news about "${c.name}" (${c.cat} company, HQ: ${c.hq||'US'}). Focus on: real estate activity, facility expansions or closures, acquisitions, new leadership hires, cost-cutting or restructuring, lease activity, financial performance, or strategic changes. Find 3-5 relevant news items from the past year. For each item provide: a headline, approximate date, and 1-2 sentences explaining why it matters from a commercial real estate / tenant rep perspective.`}]
-      })
-    });
-    const data=await resp.json();
-    const text=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim();
+    const text=await runNewsSearch(c.name,c.cat,c.hq,c.problem||'',1200);
     const cache=getNewsCache();
-    cache[corId]={text:text||'No recent news found.',scanned:new Date().toISOString(),company:c.name};
+    cache[corId]={text,scanned:new Date().toISOString(),company:c.name};
     pSet('newsCache',cache);
     if(btn){btn.disabled=false;btn.textContent='Re-scan';}
     renderNewsPage();
@@ -1908,6 +2075,7 @@ async function scanOneNews(corId, btn){
   }catch(e){
     if(btn){btn.disabled=false;btn.textContent='Scan';}
     showToast('Error: '+e.message);
+    console.error('News scan error:',e);
   }
 }
 
@@ -1922,19 +2090,9 @@ async function scanAllNews(){
     document.getElementById('scanFrac').textContent=(i+1)+'/'+all.length;
     document.getElementById('scanBar').style.width=Math.round((i+1)/all.length*100)+'%';
     try{
-      const resp=await fetch('https://api.anthropic.com/v1/messages',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-        body:JSON.stringify({
-          model:'claude-sonnet-4-6',max_tokens:800,
-          tools:[{"type":"web_search_20250305","name":"web_search"}],
-          messages:[{role:'user',content:`Search for recent news about "${c.name}" (${c.cat}). Focus on real estate activity, expansions, acquisitions, leadership changes, cost-cutting. Find 2-3 relevant items from the past year with brief CRE-relevant summaries.`}]
-        })
-      });
-      const data=await resp.json();
-      const text=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim();
+      const text=await runNewsSearch(c.name,c.cat,c.hq,c.problem||'',800);
       const cache=getNewsCache();
-      cache[c.id]={text:text||'No recent news found.',scanned:new Date().toISOString(),company:c.name};
+      cache[c.id]={text,scanned:new Date().toISOString(),company:c.name};
       pSet('newsCache',cache);
     }catch(e){}
     await new Promise(r=>setTimeout(r,500));
@@ -2249,6 +2407,145 @@ function disconnectFirebase(){
   document.getElementById('disconnectBtn') && (document.getElementById('disconnectBtn').style.display='none');
   setBannerStatus('error','Cloud sync disconnected. Data still saved locally.');
   showToast('Cloud sync disconnected.');
+}
+
+// ════════════════════════════════════════════════════════════════
+// EDIT PROFILE
+// ════════════════════════════════════════════════════════════════
+let _editProfileIdx = null;
+let _editPinVal = '';
+
+function openEditProfile(idx){
+  _editProfileIdx = idx;
+  _editPinVal = '';
+  const p = getProfiles()[idx];
+  if(!p) return;
+  // If no PIN, skip straight to edit form
+  if(!p.pin){
+    showEditForm(p);
+    document.getElementById('editProfileOverlay').style.display = 'flex';
+    return;
+  }
+  // Show PIN step
+  document.getElementById('editPinStep').style.display = 'block';
+  document.getElementById('editFormStep').style.display = 'none';
+  document.getElementById('editPinAv').className = 'pin-av c' + p.color;
+  document.getElementById('editPinAv').textContent = p.name.slice(0,2).toUpperCase();
+  document.getElementById('editPinName').textContent = p.name;
+  document.getElementById('editPinErr').textContent = '';
+  updateEditPinDots();
+  document.getElementById('editProfileOverlay').style.display = 'flex';
+}
+
+function editPinKey(n){ if(_editPinVal.length>=4)return; _editPinVal+=n; updateEditPinDots(); if(_editPinVal.length===4)checkEditPin(); }
+function editPinDel(){ _editPinVal=_editPinVal.slice(0,-1); updateEditPinDots(); }
+function updateEditPinDots(){ for(let i=0;i<4;i++) document.getElementById('epd'+i).className='pd'+(_editPinVal.length>i?' filled':''); }
+
+function checkEditPin(){
+  const p = getProfiles()[_editProfileIdx];
+  if(_editPinVal === p.pin){
+    showEditForm(p);
+  } else {
+    document.getElementById('editPinErr').textContent = 'Incorrect PIN';
+    _editPinVal = '';
+    updateEditPinDots();
+  }
+}
+
+function showEditForm(p){
+  document.getElementById('editPinStep').style.display = 'none';
+  document.getElementById('editFormStep').style.display = 'block';
+  document.getElementById('editName').value = p.name;
+  document.getElementById('editTitle').value = p.title || '';
+  document.getElementById('editPin').value = '';
+  document.getElementById('editRemovePin').checked = false;
+  // Build color swatches
+  let editColor = p.color;
+  document.getElementById('editSwatchRow').innerHTML = [...Array(8)].map((_,i)=>
+    `<div class="sw c${i}${i===p.color?' sel':''}" onclick="pickEditColor(${i})"></div>`
+  ).join('');
+  window._editColor = p.color;
+}
+
+function pickEditColor(n){
+  window._editColor = n;
+  document.querySelectorAll('#editSwatchRow .sw').forEach((el,i)=>el.classList.toggle('sel',i===n));
+}
+
+function saveEditProfile(){
+  const name = document.getElementById('editName').value.trim();
+  if(!name){ showToast('Name is required'); return; }
+  const title = document.getElementById('editTitle').value.trim();
+  const newPin = document.getElementById('editPin').value.trim();
+  const removePin = document.getElementById('editRemovePin').checked;
+  const profiles = getProfiles();
+  const p = profiles[_editProfileIdx];
+  p.name = name;
+  p.title = title || 'BD Associate';
+  p.color = window._editColor !== undefined ? window._editColor : p.color;
+  if(removePin) p.pin = '';
+  else if(newPin.length === 4) p.pin = newPin;
+  // else keep existing pin
+  saveProfiles(profiles);
+  closeEditProfile();
+  renderProfileScreen();
+  showToast('Profile updated!');
+}
+
+function closeEditProfile(){
+  document.getElementById('editProfileOverlay').style.display = 'none';
+  _editProfileIdx = null;
+  _editPinVal = '';
+}
+
+// ════════════════════════════════════════════════════════════════
+// PRE-GENERATE MODAL
+// ════════════════════════════════════════════════════════════════
+let _preGenCorId = null;
+let _preGenTone = 'casual';
+let _preGenHuman = 2;
+let _preGenLength = 'short';
+
+const HUMAN_LABELS = {
+  1: 'Very human — short sentences, casual phrasing, occasional imperfections, zero em-dashes or AI-isms',
+  2: 'Balanced — professional but natural, minimal AI-isms, reads like a real person wrote it',
+  3: 'Polished — clean and professional, may have more structured phrasing'
+};
+
+function openPreGen(corId){
+  _preGenCorId = corId;
+  // Reset to defaults
+  _preGenTone = 'casual';
+  _preGenHuman = 2;
+  _preGenLength = 'short';
+  document.querySelectorAll('#preGenToneRow .tone-chip').forEach(el=>el.classList.remove('on'));
+  document.querySelector('#preGenToneRow .tone-chip')?.classList.add('on');
+  document.querySelectorAll('#preGenLengthRow .tone-chip').forEach(el=>el.classList.remove('on'));
+  document.querySelector('#preGenLengthRow .tone-chip')?.classList.add('on');
+  document.getElementById('preGenHumanSlider').value = 2;
+  document.getElementById('humanLabel').textContent = HUMAN_LABELS[2];
+  document.getElementById('preGenOverlay').style.display = 'flex';
+}
+function closePreGen(){ document.getElementById('preGenOverlay').style.display = 'none'; }
+
+function selectPreGenTone(el, tone){
+  _preGenTone = tone;
+  document.querySelectorAll('#preGenToneRow .tone-chip').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+}
+function selectPreGenLength(el, len){
+  _preGenLength = len;
+  document.querySelectorAll('#preGenLengthRow .tone-chip').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+}
+function updateHumanLabel(val){
+  _preGenHuman = parseInt(val);
+  document.getElementById('humanLabel').textContent = HUMAN_LABELS[val]||'';
+}
+
+function confirmGenerate(){
+  closePreGen();
+  generateEmail(_preGenCorId, _preGenTone, _preGenHuman, _preGenLength);
 }
 
 function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500)}
