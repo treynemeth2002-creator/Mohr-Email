@@ -1183,11 +1183,16 @@ function renderCORBody(c,stage){
     <div style="margin-top:10px"><div style="font-size:10px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Follow-Up Date</div>
     <input type="date" class="fs" style="font-size:11px;padding:5px 9px" value="${fu.date||""}" onchange="setFollowUp(${c.id},this.value)"></div></div>
   </div>
-  <div style="margin-bottom:12px"><div style="font-size:10px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px">Select Contact(s)</div>
-  <div class="contacts-row">${(c.contacts||[]).map((ct,i)=>{const k=ct.email||ct.name;const s=sel.includes(k);return`<div class="ct-card${s?" sel":""}" onclick="toggleContact(${c.id},${i})"><div class="ct-check">${s?"&#10003;":""}</div><div class="ct-role">${ct.role}</div><div class="ct-name">${ct.name}</div><div class="ct-email">${ct.email||"Email TBD"}</div></div>`}).join("")}</div></div>
+  <div style="margin-bottom:12px">
+  <div style="font-size:10px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px">Select Contact(s)</div>
+  <div id="contactsDisplay-${c.id}">
+    <div class="contacts-row">${getContacts(c.id).map((ct,i)=>{const k=ct.email||ct.name;const s=sel.includes(k);return`<div class="ct-card${s?" sel":""}" onclick="toggleContact(${c.id},${i})"><div class="ct-check">${s?"&#10003;":""}</div><div class="ct-role">${ct.role||"Contact"}</div><div class="ct-name">${ct.name}</div><div class="ct-email">${ct.email||'<span style="color:var(--gm);font-style:italic">No email</span>'}</div></div>`}).join("")||'<div style="color:var(--gm);font-size:12px">No contacts yet.</div>'}</div>
+    <button type="button" onclick="startEditContacts(${c.id})" style="background:none;border:none;font-size:10px;color:var(--gold3);cursor:pointer;text-decoration:underline;margin-top:6px;font-weight:600">&#9998; Edit contacts</button>
+  </div>
+</div>
   <div style="margin-bottom:12px"><div style="font-size:10px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px">Pitch Angle</div>
   <div id="angleDisplay-${c.id}">
-  <div class="angle-row">${(pGet("customProblems_"+c.id)||c.problems||[]).map(a=>`<button type="button" class="abt${a===angle?" on":""}" onclick="setAngle(${c.id},'${a.replace(/'/g,"\\'")}')">...`).join("")}</div>
+  <div class="angle-row">${(pGet("customProblems_"+c.id)||c.problems||[]).map(a=>`<button type="button" class="abt${a===angle?" on":""}" onclick="setAngle(${c.id},'${a.replace(/'/g,"\\'")}')">${a}</button>`).join("")}</div>
   <button type="button" onclick="startEditAngles(${c.id})" style="background:none;border:none;font-size:10px;color:var(--gold3);cursor:pointer;text-decoration:underline;margin-top:6px;font-weight:600">&#9998; Edit angles</button>
   </div></div>
   <div class="draft-area">
@@ -1221,7 +1226,7 @@ function renderCORBody(c,stage){
 }
 
 function toggleCOR(id){openCORId=openCORId===id?null:id;renderCORs();if(openCORId===id){const el=document.getElementById("cor-"+id);if(el)setTimeout(()=>el.scrollIntoView({behavior:"smooth",block:"nearest"}),50)}}
-function toggleContact(corId,idx){const c=COS_ALL().find(co=>co.id===corId);if(!c)return;const ct=c.contacts[idx];const k=ct.email||ct.name;let sel=pGet("selContacts_"+corId)||[];sel.includes(k)?sel=sel.filter(x=>x!==k):sel.push(k);pSet("selContacts_"+corId,sel);const b=document.getElementById("crb-"+corId);if(b)b.innerHTML=renderCORBody(c,getPipelineData()[corId]||"Cold")}
+function toggleContact(corId,idx){const c=COS_ALL().find(co=>co.id===corId);if(!c)return;const contacts=getContacts(corId);const ct=contacts[idx];if(!ct)return;const k=ct.email||ct.name;let sel=pGet("selContacts_"+corId)||[];sel.includes(k)?sel=sel.filter(x=>x!==k):sel.push(k);pSet("selContacts_"+corId,sel);const b=document.getElementById("crb-"+corId);if(b)b.innerHTML=renderCORBody(c,getPipelineData()[corId]||"Cold")}
 function setAngle(corId,angle){pSet("angle_"+corId,angle);const c=COS_ALL().find(co=>co.id===corId);if(!c)return;const b=document.getElementById("crb-"+corId);if(b)b.innerHTML=renderCORBody(c,getPipelineData()[corId]||"Cold")}
 function setSeqTab(corId,tab){pSet("seqtab_"+corId,tab);const c=COS_ALL().find(co=>co.id===corId);if(!c)return;const b=document.getElementById("crb-"+corId);if(b)b.innerHTML=renderCORBody(c,getPipelineData()[corId]||"Cold")}
 function setFollowUp(corId,date){const fus=pGet("followups")||{};fus[corId]=fus[corId]||{};fus[corId].date=date;pSet("followups",fus);renderDashboard()}
@@ -1532,6 +1537,13 @@ document.addEventListener("click",function(e){
     var cid=e.target.getAttribute("data-cid");
     var ridx=parseInt(e.target.getAttribute("data-idx"));
     if(cid&&!isNaN(ridx))removeAngleItem(cid,ridx);
+  }
+  // Contact remove × buttons
+  if(e.target&&e.target.getAttribute&&e.target.getAttribute("data-remove-ct")==="1"){
+    e.stopPropagation();
+    var cid2=e.target.getAttribute("data-cid");
+    var ctidx=parseInt(e.target.getAttribute("data-ctidx"));
+    if(cid2&&!isNaN(ctidx))removeContactItem2(cid2,ctidx);
   }
 });
 
@@ -2148,6 +2160,83 @@ function renderFUStageView(){
 
   if(!html) html = '<div style="padding:30px;text-align:center;color:var(--gm);font-size:13px">No active pipeline yet. Start reaching out to move companies through stages.</div>';
   el.innerHTML = html;
+}
+
+
+// ════════════════════════════════════════════════════════════════
+// EDITABLE CONTACTS per COR
+// ════════════════════════════════════════════════════════════════
+var _contactEditMode = {};
+
+function getContacts(corId){
+  var co = COS_ALL().find(function(x){return x.id==corId;});
+  var saved = pGet("customContacts_"+corId);
+  return saved || (co && co.contacts) || [];
+}
+
+function renderContactsDisplay(corId){
+  var el = document.getElementById("contactsDisplay-"+corId); if(!el) return;
+  var contacts = getContacts(corId);
+  var sel = pGet("selContacts_"+corId) || [];
+  var editing = !!_contactEditMode[corId];
+
+  if(editing){
+    var rows = contacts.map(function(ct,i){
+      return '<div style="display:flex;gap:6px;align-items:center;margin-bottom:7px;flex-wrap:wrap">'
+        +'<input value="'+ct.name.replace(/"/g,'&quot;')+'" onchange="saveContactField('+corId+','+i+',\'name\',this.value)" placeholder="Name" style="flex:1.2;min-width:80px;border:1.5px solid var(--gl);border-radius:6px;padding:5px 9px;font-size:12px;color:var(--tp);outline:none">'
+        +'<input value="'+(ct.role||"").replace(/"/g,'&quot;')+'" onchange="saveContactField('+corId+','+i+',\'role\',this.value)" placeholder="Role/Title" style="flex:1;min-width:80px;border:1.5px solid var(--gl);border-radius:6px;padding:5px 9px;font-size:12px;color:var(--tp);outline:none">'
+        +'<input value="'+(ct.email||"").replace(/"/g,'&quot;')+'" onchange="saveContactField('+corId+','+i+',\'email\',this.value)" placeholder="email@company.com" style="flex:1.5;min-width:120px;border:1.5px solid var(--gl);border-radius:6px;padding:5px 9px;font-size:12px;color:var(--tp);outline:none">'
+        +'<button type="button" data-remove-ct="1" data-cid="'+corId+'" data-ctidx="'+i+'" style="background:none;border:none;color:#c62828;font-size:15px;cursor:pointer;font-weight:900;padding:0 4px" title="Remove">&times;</button>'
+      +'</div>';
+    }).join("");
+
+    el.innerHTML = rows
+      +'<div style="display:flex;gap:7px;margin-top:8px;flex-wrap:wrap">'
+      +'<button type="button" onclick="addContactItem('+corId+')" style="background:none;border:1.5px dashed var(--gl);border-radius:7px;color:var(--ts);padding:6px 14px;font-size:11px;cursor:pointer">+ Add Contact</button>'
+      +'<button type="button" onclick="doneEditContacts('+corId+')" class="act-btn" style="padding:5px 12px;font-size:11px;border-color:var(--success);color:var(--success)">Done</button>'
+      +'</div>';
+  } else {
+    var cards = contacts.map(function(ct,i){
+      var k = ct.email || ct.name;
+      var selected = sel.includes(k);
+      return '<div class="ct-card'+(selected?" sel":"")+'" onclick="toggleContact('+corId+','+i+')">'
+        +'<div class="ct-check">'+(selected?"&#10003;":"")+'</div>'
+        +'<div class="ct-role">'+ct.role+'</div>'
+        +'<div class="ct-name">'+ct.name+'</div>'
+        +'<div class="ct-email">'+(ct.email||'<span style="color:var(--gm);font-style:italic">No email — click to add</span>')+'</div>'
+      +'</div>';
+    }).join("") || '<div style="color:var(--gm);font-size:12px">No contacts — click Edit to add some.</div>';
+
+    el.innerHTML = '<div class="contacts-row">'+cards+'</div>'
+      +'<button type="button" onclick="startEditContacts('+corId+')" style="background:none;border:none;font-size:10px;color:var(--gold3);cursor:pointer;text-decoration:underline;margin-top:6px;font-weight:600">&#9998; Edit contacts</button>';
+  }
+}
+
+function startEditContacts(corId){ _contactEditMode[corId]=true; renderContactsDisplay(corId); }
+function doneEditContacts(corId){  _contactEditMode[corId]=false; renderContactsDisplay(corId); }
+
+function saveContactField(corId, idx, field, value){
+  var contacts = getContacts(corId).map(function(c){return Object.assign({},c);});
+  if(!contacts[idx]) return;
+  contacts[idx][field] = value.trim();
+  pSet("customContacts_"+corId, contacts);
+}
+
+function addContactItem(corId){
+  var contacts = getContacts(corId).slice();
+  contacts.push({name:"New Contact", role:"", email:""});
+  pSet("customContacts_"+corId, contacts);
+  renderContactsDisplay(corId);
+}
+
+function removeContactItem2(corId, idx){
+  var contacts = getContacts(corId).slice();
+  contacts.splice(idx,1);
+  pSet("customContacts_"+corId, contacts.length ? contacts : null);
+  // Clean up selection
+  var sel = pGet("selContacts_"+corId)||[];
+  pSet("selContacts_"+corId, sel.slice(0, contacts.length));
+  renderContactsDisplay(corId);
 }
 
 
