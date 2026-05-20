@@ -1045,6 +1045,16 @@ async function generateEmail(corId,preGenTone,preGenHuman,preGenLength){
   const wordCount={short:"under 120 words",medium:"around 160-180 words",long:"around 220-250 words"}[preGenLength||"short"]||"under 150 words";
   const humanInstr=humanLevel===1?"HUMAN VOICE: Write like a real 24-year-old BD guy. Short punchy sentences. No em-dashes at all. No semicolons. No cliche openers. Contractions everywhere. Zero AI-isms.":humanLevel===2?"NATURAL VOICE: Real person, not AI. Avoid em-dashes. No cliche openers. Contractions. Varied sentence length.":"PROFESSIONAL VOICE: Clear and polished but human. No em-dashes.";
   const fmtInstr=emailFormat==="linkedin"?"FORMAT: LinkedIn InMail. Max 120 words. No formal sign-off.":emailFormat==="call"?"FORMAT: Call script — opening line, value prop, 2 discovery questions, CTA. Use Script: not Subject:.":"FORMAT: Cold email.";
+  // Pull cached news for this company to use as specific hook
+  var _newsCache=getNewsCache();var _companyNews=_newsCache[corId];var newsHookInstr="";
+  if(_companyNews&&_companyNews.articles&&_companyNews.articles.length){
+    var _topArticles=_companyNews.articles.slice(0,6);
+    newsHookInstr="SPECIFIC NEWS HOOK (required — use one of these real recent articles as your opening):\n"+_topArticles.map(function(a,i){return(i+1)+'. "'+a.title+'" ('+a.source+(a.date?', '+a.date:'')+')';}).join("\n")+"\n\nOpen the email by referencing one of these SPECIFICALLY. Example: \"I saw that [Company] just [thing from article]...\" or \"I was reading about [specific headline]...\". Be direct and natural — like you actually read it. Pick whichever article is most relevant to the pitch angle.";
+  } else if(_companyNews&&_companyNews.text){
+    newsHookInstr="INTEL HOOK (required — pick one specific detail as your opener):\n"+_companyNews.text.slice(0,600)+"\n\nOpen by referencing one specific development from this intel. Make it feel like you noticed it recently.";
+  } else {
+    newsHookInstr="NEWS HOOK (required): You must open with a SPECIFIC recent reference to this company. Search your knowledge for a specific recent development: new location, acquisition, leadership change, expansion, financial result, or strategic move. If you don't know of a specific recent event, reference the most compelling aspect of their current situation (e.g. their acquisition of a company, their pending deal, their expansion into a new market). Do NOT open with a generic observation.";
+  }
   const prompt=`You are writing BD outreach for ${senderName} at Mohr Partners — the largest tenant rep MBE in the US. Tenant rep only (no landlord conflicts). Services: lease admin, CAM audits, portfolio optimization, Bill Pay, BI/site selection, international coverage.
 
 CRITICAL STYLE RULES — these emails must sound like they were written by a real BD person, not AI:
@@ -1060,7 +1070,9 @@ CRITICAL STYLE RULES — these emails must sound like they were written by a rea
 Company: ${c.name} | ${c.cat} | HQ: ${c.hq||""}
 Target: ${tName} (${tRole})
 Pitch angle: ${angle} | Tone: ${tone}
-Background context (use to find a specific trigger, do NOT cite as verified facts): ${c.problem||""}
+Background context (do NOT cite as verified facts): ${c.problem||""}
+
+${newsHookInstr}
 
 ${humanInstr}
 Length: ${wordCount}
@@ -1347,6 +1359,7 @@ async function newsLoadArticles(){
       const cache=getNewsCache();
       if(!cache[c.id])cache[c.id]={scanned:null,text:null,company:c.name};
       cache[c.id].lastArticles=new Date().toISOString();
+      cache[c.id].articles=articles.slice(0,10).map(function(a){return{title:a.title,source:a.source,date:a.relTime||a.date,url:a.url};});
       localStorage.setItem("shared_newsCache",JSON.stringify(cache));
       newsRenderHistory();
     }
