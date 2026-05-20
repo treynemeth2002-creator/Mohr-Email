@@ -1031,6 +1031,24 @@ function confirmGenerate(){closePreGen();generateEmail(_preGenCorId,_preGenTone,
 
 const TOUCH_PROMPTS=["Write a cold outreach email (first touch).","Write a follow-up email (second touch, referencing first outreach ~1 week ago).","Write a short breakup email (third touch — brief, friendly, leaves door open)."];
 
+function getTitleAngle(role){
+  if(!role)return "";
+  var r=role.toLowerCase();
+  if(/ceo|chief exec|founder|president|owner|managing partner/.test(r))
+    return "CONTACT IS CEO/PRESIDENT — pitch at the strategic level. They care about company valuation, EBITDA impact, competitive positioning, and growth. Frame real estate as a lever on overall company performance. Keep it high-level — no operational detail. One sharp strategic point is better than three tactical ones.";
+  if(/cfo|chief financial|finance|controller|treasurer|vp finance/.test(r))
+    return "CONTACT IS CFO — they care about cost reduction, EBITDA impact, hidden liabilities, and financial risk exposure. Lead with specific savings potential: CAM audit recoveries, overpayments in acquired leases, and rent reduction outcomes. Use numbers and percentages where possible. Frame real estate as a financial risk with a clear ROI on fixing it.";
+  if(/cdo|chief dev|development|chief growth|growth|expansion|site selection|new markets/.test(r))
+    return "CONTACT IS CDO/GROWTH — they care about opening locations fast, market analytics, and de novo execution. Lead with business intelligence tools, market scoring, demographic data, and how we accelerate the expansion pipeline with better site selection data.";
+  if(/coo|chief oper|operations|chief of staff/.test(r))
+    return "CONTACT IS COO/OPERATIONS — they care about removing operational burden and centralizing processes. Lead with how our lease admin removes workload from internal teams, consolidates portfolio data into one place, and streamlines day-to-day real estate overhead.";
+  if(/general counsel|chief legal|counsel|legal|attorney/.test(r))
+    return "CONTACT IS LEGAL — they care about lease compliance, hidden liabilities in acquired agreements, and data accuracy. Lead with lease abstraction, CAM audit rights, and risk exposure in legacy or acquired leases.";
+  if(/real estate|facilities|portfolio manager|property/.test(r))
+    return "CONTACT IS REAL ESTATE/FACILITIES — they manage this day-to-day and need execution support. Lead with lease admin offload, CAM reconciliation, and portfolio analytics. Be specific about process and tools — they'll appreciate it.";
+  return "";
+}
+
 async function generateEmail(corId,preGenTone,preGenHuman,preGenLength){
   const c=COS_ALL().find(co=>co.id===corId);if(!c)return;
   const apiKey=getAPIKey();if(!apiKey){showToast("Add API key in Settings");return}
@@ -1045,17 +1063,27 @@ async function generateEmail(corId,preGenTone,preGenHuman,preGenLength){
   const wordCount={short:"under 120 words",medium:"around 160-180 words",long:"around 220-250 words"}[preGenLength||"short"]||"under 150 words";
   const humanInstr=humanLevel===1?"HUMAN VOICE: Write like a real 24-year-old BD guy. Short punchy sentences. No em-dashes at all. No semicolons. No cliche openers. Contractions everywhere. Zero AI-isms.":humanLevel===2?"NATURAL VOICE: Real person, not AI. Avoid em-dashes. No cliche openers. Contractions. Varied sentence length.":"PROFESSIONAL VOICE: Clear and polished but human. No em-dashes.";
   const fmtInstr=emailFormat==="linkedin"?"FORMAT: LinkedIn InMail. Max 120 words. No formal sign-off.":emailFormat==="call"?"FORMAT: Call script — opening line, value prop, 2 discovery questions, CTA. Use Script: not Subject:.":"FORMAT: Cold email.";
-  // Pull cached news for this company to use as specific hook
+    // Pull cached news and filter to recent/relevant only (within 120 days)
   var _newsCache=getNewsCache();var _companyNews=_newsCache[corId];var newsHookInstr="";
+  var _titleAngle=getTitleAngle(tRole);
   if(_companyNews&&_companyNews.articles&&_companyNews.articles.length){
-    var _topArticles=_companyNews.articles.slice(0,6);
-    newsHookInstr="SPECIFIC NEWS HOOK (required — use one of these real recent articles as your opening):\n"+_topArticles.map(function(a,i){return(i+1)+'. "'+a.title+'" ('+a.source+(a.date?', '+a.date:'')+')';}).join("\n")+"\n\nOpen the email by referencing one of these SPECIFICALLY. Example: \"I saw that [Company] just [thing from article]...\" or \"I was reading about [specific headline]...\". Be direct and natural — like you actually read it. Pick whichever article is most relevant to the pitch angle.";
+    var _now=Date.now();
+    var _recentArticles=_companyNews.articles.filter(function(a){
+      if(!a.date)return false;
+      var d=new Date(a.date);if(isNaN(d))return false;
+      return (_now-d)<(120*24*60*60*1000);
+    });
+    if(_recentArticles.length){
+      newsHookInstr="SPECIFIC NEWS HOOK — use ONE of these real recent articles as your opening. Pick the most relevant to the pitch angle. Reference it naturally like you read it. Only use it if it is relevant to the outreach. Do not force an irrelevant article:\n"+_recentArticles.slice(0,5).map(function(a,i){return(i+1)+'. "'+a.title+'" ('+a.source+(a.date?', '+a.date:'')+')';}).join("\n");
+    } else {
+      newsHookInstr="NEWS HOOK: No recent articles available (all older than 120 days). Open with a specific observation about this company's known strategic situation instead — an acquisition, market expansion, leadership change, or growth trajectory. Be specific, not generic.";
+    }
   } else if(_companyNews&&_companyNews.text){
-    newsHookInstr="INTEL HOOK (required — pick one specific detail as your opener):\n"+_companyNews.text.slice(0,600)+"\n\nOpen by referencing one specific development from this intel. Make it feel like you noticed it recently.";
+    newsHookInstr="INTEL HOOK — pick ONE specific detail from this briefing as your opener, only if it represents a real recent development:\n"+_companyNews.text.slice(0,500);
   } else {
-    newsHookInstr="NEWS HOOK (required): You must open with a SPECIFIC recent reference to this company. Search your knowledge for a specific recent development: new location, acquisition, leadership change, expansion, financial result, or strategic move. If you don't know of a specific recent event, reference the most compelling aspect of their current situation (e.g. their acquisition of a company, their pending deal, their expansion into a new market). Do NOT open with a generic observation.";
+    newsHookInstr="NEWS HOOK: No cached news. Open with a SPECIFIC reference to something real about this company you know — a known acquisition, expansion, leadership change, or strategic move. Do NOT use generic openers.";
   }
-  const prompt=`You are writing BD outreach for ${senderName} at Mohr Partners — the largest tenant rep MBE in the US. Tenant rep only (no landlord conflicts). Services: lease admin, CAM audits, portfolio optimization, Bill Pay, BI/site selection, international coverage.
+    const prompt=`You are writing BD outreach for ${senderName} at Mohr Partners — the largest tenant rep MBE in the US. Tenant rep only (no landlord conflicts). Services: lease admin, CAM audits, portfolio optimization, Bill Pay, BI/site selection, international coverage.
 
 CRITICAL STYLE RULES — these emails must sound like they were written by a real BD person, not AI:
 - Open with something SPECIFIC and PERSONAL: a congrats on a new role, a news article you saw, a podcast you listened to, running across their location, a LinkedIn connection, a shared event, or reconnecting after a gap. NEVER start with "I hope this email finds you well" or any generic opener.
@@ -1074,6 +1102,12 @@ Background context (do NOT cite as verified facts): ${c.problem||""}
 
 ${newsHookInstr}
 
+${_titleAngle}
+
+BROKER BLACKOUT: Do NOT mention any incumbent broker, competing firm, or existing real estate vendor (JLL, CBRE, Cushman & Wakefield, Colliers, Avison Young, Cresa, or any other firm) in the email — not by name, not by implication. Pretend you have no knowledge of any existing broker relationship. Do not say anything like "I know you work with..." or "even if you have an existing broker..."
+
+EM DASH BAN — ABSOLUTE RULE: Never use em dashes (—) or en dashes (–) anywhere in this email. Not once. Not even close to one. If you feel the urge to use a dash mid-sentence, use a comma, a period, or rewrite the sentence. This is a hard rule with zero exceptions.
+
 ${humanInstr}
 Length: ${wordCount}
 ${fmtInstr}
@@ -1090,9 +1124,13 @@ Start with Subject:`;
     const data=await resp.json();gs.style.display="none";gb.style.display="block";btn.disabled=false;
     if(!resp.ok){showToast("API error: "+(data?.error?.message||resp.status));return}
     const raw=(data.content||[]).map(b=>b.text||"").join("").trim();
-    const sm=raw.match(/^(?:Subject|Script):\s*(.+)/im);const subject=sm?sm[1].trim():"";const body=sm?raw.slice(raw.indexOf(sm[0])+sm[0].length).trim():raw;
-    pSet("draft_subj_"+corId,subject);const bodies=pGet("draft_bodies_"+corId)||["","",""];bodies[seqTab]=body;pSet("draft_bodies_"+corId,bodies);
-    const se=document.getElementById("subj-"+corId);if(se)se.value=subject;const be=document.getElementById("body-"+corId+"-"+seqTab);if(be)be.value=body;
+    const sm=raw.match(/^(?:Subject|Script):\s*(.+)/im);const subject=sm?sm[1].trim():"";
+    const bodyRaw=sm?raw.slice(raw.indexOf(sm[0])+sm[0].length).trim():raw;
+    // Strip em dashes and en dashes — hard rule, belt-and-suspenders
+    const body=bodyRaw.replace(/\u2014/g,",").replace(/\u2013/g,",").replace(/ \- /g," ").trim();
+    const subjectClean=subject.replace(/\u2014/g,",").replace(/\u2013/g,",").trim();
+    pSet("draft_subj_"+corId,subjectClean);const bodies=pGet("draft_bodies_"+corId)||["","",""];bodies[seqTab]=body;pSet("draft_bodies_"+corId,bodies);
+    const se=document.getElementById("subj-"+corId);if(se)se.value=subjectClean;const be=document.getElementById("body-"+corId+"-"+seqTab);if(be)be.value=body;
   }catch(e){gs.style.display="none";gb.style.display="block";btn.disabled=false;showToast("Error: "+e.message)}
 }
 
