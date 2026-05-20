@@ -319,6 +319,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
       <button type="button" class="tone-chip" onclick="selectPreGenLength(this,'medium')">Medium (~180)</button>
       <button type="button" class="tone-chip" onclick="selectPreGenLength(this,'long')">Long (~250)</button>
     </div>
+    <label style="display:block;color:var(--gm);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;margin-top:4px">Specific directions (optional)</label>
+    <textarea id="preGenCustomInstr" style="width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:9px 13px;font-size:13px;margin-bottom:16px;outline:none;resize:vertical;min-height:76px;font-family:inherit;line-height:1.5" placeholder="e.g. Focus on their recent XYZ acquisition... mention Dallas expansion... keep it under 80 words... push the CAM audit angle harder..."></textarea>
     <div class="btn-row">
       <button type="button" class="btn-o" onclick="closePreGen()">Cancel</button>
       <button type="button" class="btn-g" onclick="confirmGenerate()">&#9889; Generate</button>
@@ -431,52 +433,28 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
 
 <div class="page" id="page-news">
   <div class="ph">
-    <div><div class="pt">Company News</div><div class="ps2">Recent news articles + AI intel briefing for any target company</div></div>
+    <div><div class="pt">Company Intel</div><div class="ps2">Search a company and get an AI-powered CRE intelligence briefing</div></div>
     <button type="button" class="act-btn" onclick="openAddCOR()" style="border-color:var(--gold);color:var(--gold3)">+ Add COR</button>
   </div>
-
-  <!-- Search bar -->
   <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:18px">
     <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px">Search Company</div>
     <div style="position:relative">
-      <input type="text" id="newsSearchInput" class="si" placeholder="Click to see all companies, or start typing to filter..." onfocus="newsSearchFocus()" oninput="newsSearchType()" autocomplete="off" style="padding-right:36px">
-      <span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--gm);font-size:13px;pointer-events:none">&#9660;</span>
-      <div id="newsDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid var(--gl);border-top:none;border-radius:0 0 10px 10px;overflow:hidden;max-height:280px;overflow-y:auto;z-index:50;box-shadow:0 6px 24px rgba(0,0,0,.12)"></div>
+      <input type="text" id="newsSearchInput" class="si" placeholder="Start typing a company name..." oninput="newsSearchType()" autocomplete="off">
+      <div id="newsDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid var(--gl);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;max-height:240px;overflow-y:auto;z-index:50;box-shadow:0 4px 16px rgba(0,0,0,.1)"></div>
     </div>
   </div>
-
-  <!-- Results: articles feed -->
-  <div id="newsResultArea" style="display:none;margin-bottom:20px">
-    <!-- Company header bar -->
-    <div style="background:var(--navy);border-radius:12px 12px 0 0;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
-      <div>
-        <div id="newsResultName" style="font-size:16px;font-weight:700;color:#fff"></div>
-        <div id="newsResultMeta" style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px"></div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        <button type="button" id="newsRefreshBtn" onclick="newsLoadArticles()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:600">&#8635; Refresh</button>
-        <button type="button" id="newsIntelBtn" onclick="newsSearchScan()" style="background:var(--gold);border:none;color:var(--navy3);border-radius:6px;padding:6px 14px;cursor:pointer;font-size:12px;font-weight:700">&#10022; AI Briefing</button>
+  <div id="newsResult" style="display:none;background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden;margin-bottom:20px">
+    <div style="background:var(--navy);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div><div id="newsResultName" style="font-size:16px;font-weight:700;color:#fff"></div><div id="newsResultMeta" style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px"></div></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span id="newsResultAge" style="font-size:11px;color:rgba(255,255,255,.5)"></span>
+        <button type="button" id="newsRescanBtn" onclick="newsSearchScan()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:600">Re-scan</button>
       </div>
     </div>
-
-    <!-- AI briefing panel (collapsible) -->
-    <div id="newsIntelPanel" style="display:none;background:#f0f4ff;border-left:1px solid var(--gl);border-right:1px solid var(--gl);padding:18px 20px;border-bottom:1px solid var(--gl)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div style="font-size:12px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px">&#10022; AI Intel Briefing</div>
-        <span id="newsIntelAge" style="font-size:11px;color:var(--gm)"></span>
-      </div>
-      <div id="newsIntelBody" style="font-size:13px;line-height:1.75;color:var(--tp)"></div>
-    </div>
-
-    <!-- Articles list -->
-    <div id="newsArticlesFeed" style="background:#fff;border:1px solid var(--gl);border-top:none;border-radius:0 0 12px 12px;overflow:hidden">
-      <div style="padding:18px 20px;color:var(--gm);font-size:13px;text-align:center">Select a company to load news.</div>
-    </div>
+    <div id="newsResultBody" style="padding:22px;font-size:13px;line-height:1.75;color:var(--tp)"></div>
   </div>
-
-  <!-- Previously loaded companies -->
   <div>
-    <div style="font-size:11px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Previously Loaded</div>
+    <div style="font-size:11px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Previously Scanned</div>
     <div id="newsHistory" style="display:flex;flex-direction:column;gap:8px"></div>
   </div>
 </div>
@@ -960,6 +938,64 @@ function renderCORs(){
   document.getElementById("corListEl").innerHTML=html;
 }
 
+var _angleEditMode={};
+
+function getProblems(corId){
+  var co=COS_ALL().find(function(x){return x.id==corId;});
+  return pGet("customProblems_"+corId)||(co&&co.problems)||[];
+}
+
+function renderAngleDisplay(corId){
+  var el=document.getElementById("angleDisplay-"+corId);if(!el)return;
+  var probs=getProblems(corId);
+  var angle=pGet("angle_"+corId)||(probs[0]||"");
+  var editing=!!_angleEditMode[corId];
+  var btns=probs.map(function(a,i){
+    var sel=(a===angle)?" on":"";
+    var xBtn=editing?" <span data-remove='1' data-cid='"+corId+"' data-idx='"+i+"' style='margin-left:3px;font-weight:900;color:#c62828;cursor:pointer;font-size:11px'>&times;</span>":"";
+    return '<button type="button" class="abt'+sel+'" onclick="setAngle('+corId+',\''+a.replace(/'/g,"\\'")+'\')">'+a+xBtn+'</button>';
+  }).join("");
+  if(editing){
+    el.innerHTML='<div class="angle-row">'+btns+'</div>'
+      +'<div style="display:flex;gap:7px;margin-top:9px;align-items:center;flex-wrap:wrap">'
+      +'<input type="text" id="newAngleInp-'+corId+'" class="si" placeholder="New angle (e.g. Acquisition Support)" style="flex:1;min-width:140px;font-size:11px;padding:5px 10px" onkeydown="if(event.key===\'Enter\'){event.preventDefault();addAngleItem('+corId+')}">'
+      +'<button type="button" class="act-btn" onclick="addAngleItem('+corId+')" style="padding:5px 11px;font-size:11px">+ Add</button>'
+      +'<button type="button" class="act-btn" onclick="doneEditAngles('+corId+')" style="padding:5px 11px;font-size:11px;border-color:var(--success);color:var(--success)">Done</button>'
+      +'<button type="button" onclick="resetAngles('+corId+')" style="background:none;border:none;color:var(--gm);font-size:10px;cursor:pointer;text-decoration:underline">Reset</button>'
+      +'</div>';
+  } else {
+    el.innerHTML='<div class="angle-row">'+btns+'</div>'
+      +'<button type="button" onclick="startEditAngles('+corId+')" style="background:none;border:none;font-size:10px;color:var(--gold3);cursor:pointer;text-decoration:underline;margin-top:6px;font-weight:600">&#9998; Edit angles</button>';
+  }
+}
+
+function startEditAngles(corId){_angleEditMode[corId]=true;renderAngleDisplay(corId)}
+function doneEditAngles(corId){_angleEditMode[corId]=false;renderAngleDisplay(corId)}
+
+function addAngleItem(corId){
+  var inp=document.getElementById("newAngleInp-"+corId);
+  var val=inp?inp.value.trim():"";if(!val){showToast("Type an angle name first");return;}
+  var probs=getProblems(corId).slice();
+  if(probs.indexOf(val)>=0){showToast("Angle already exists");return;}
+  probs.push(val);pSet("customProblems_"+corId,probs);
+  if(inp)inp.value="";showToast(val+" added");renderAngleDisplay(corId);
+}
+
+function removeAngleItem(corId,idx){
+  var probs=getProblems(corId).slice();probs.splice(idx,1);
+  pSet("customProblems_"+corId,probs.length?probs:null);
+  var cur=pGet("angle_"+corId);
+  if(probs.length&&probs.indexOf(cur)<0)pSet("angle_"+corId,probs[0]);
+  renderAngleDisplay(corId);
+}
+
+function resetAngles(corId){
+  if(!confirm("Reset angles to default for this company?"))return;
+  pSet("customProblems_"+corId,null);_angleEditMode[corId]=false;
+  renderAngleDisplay(corId);showToast("Angles reset");
+}
+
+
 function renderCORBody(c,stage){
   const sel=pGet("selContacts_"+c.id)||[];
   const angle=pGet("angle_"+c.id)||((c.problems||[])[0])||"Lease Admin";
@@ -978,7 +1014,10 @@ function renderCORBody(c,stage){
   <div style="margin-bottom:12px"><div style="font-size:10px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px">Select Contact(s)</div>
   <div class="contacts-row">${(c.contacts||[]).map((ct,i)=>{const k=ct.email||ct.name;const s=sel.includes(k);return`<div class="ct-card${s?" sel":""}" onclick="toggleContact(${c.id},${i})"><div class="ct-check">${s?"&#10003;":""}</div><div class="ct-role">${ct.role}</div><div class="ct-name">${ct.name}</div><div class="ct-email">${ct.email||"Email TBD"}</div></div>`}).join("")}</div></div>
   <div style="margin-bottom:12px"><div style="font-size:10px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px">Pitch Angle</div>
-  <div class="angle-row">${(c.problems||[]).map(a=>`<button type="button" class="abt${a===angle?" on":""}" onclick="setAngle(${c.id},'${a.replace(/'/g,"\\'")}')">${a}</button>`).join("")}</div></div>
+  <div id="angleDisplay-${c.id}">
+  <div class="angle-row">${(pGet("customProblems_"+c.id)||c.problems||[]).map(a=>`<button type="button" class="abt${a===angle?" on":""}" onclick="setAngle(${c.id},'${a.replace(/'/g,"\\'")}')">...`).join("")}</div>
+  <button type="button" onclick="startEditAngles(${c.id})" style="background:none;border:none;font-size:10px;color:var(--gold3);cursor:pointer;text-decoration:underline;margin-top:6px;font-weight:600">&#9998; Edit angles</button>
+  </div></div>
   <div class="draft-area">
     <div class="draft-hdr">
       <div><div class="draft-title">Email Sequence</div>
@@ -1020,36 +1059,34 @@ function getAPIKey(){return pGet("apikey")||""}
 let emailFormat="email";
 function setEmailFormat(fmt){emailFormat=fmt;["email","linkedin","call"].forEach(f=>{const el=document.getElementById("fmt-"+f);if(el)el.classList.toggle("on",f===fmt)});const h=document.getElementById("formatHint");if(h)h.textContent={email:"Standard cold email",linkedin:"LinkedIn InMail (shorter)",call:"Call script / talk track"}[fmt]||""}
 
-let _preGenCorId=null,_preGenTone="casual",_preGenHuman=2,_preGenLength="short";
+let _preGenCorId=null,_preGenTone="casual",_preGenHuman=2,_preGenLength="short",_preGenCustomInstr="";
 const HUMAN_LABELS={1:"Very human — short sentences, no em-dashes, no AI-isms",2:"Balanced — natural and professional",3:"Polished — clean and structured"};
-function openPreGen(corId){_preGenCorId=corId;_preGenTone="casual";_preGenHuman=2;_preGenLength="short";document.querySelectorAll("#preGenToneRow .tone-chip").forEach((el,i)=>el.classList.toggle("on",i===0));document.querySelectorAll("#preGenLengthRow .tone-chip").forEach((el,i)=>el.classList.toggle("on",i===0));document.getElementById("preGenHumanSlider").value=2;document.getElementById("humanLabel").textContent=HUMAN_LABELS[2];document.getElementById("preGenOverlay").style.display="flex"}
+function openPreGen(corId){_preGenCorId=corId;_preGenTone="casual";_preGenHuman=2;_preGenLength="short";document.querySelectorAll("#preGenToneRow .tone-chip").forEach((el,i)=>el.classList.toggle("on",i===0));document.querySelectorAll("#preGenLengthRow .tone-chip").forEach((el,i)=>el.classList.toggle("on",i===0));document.getElementById("preGenHumanSlider").value=2;document.getElementById("humanLabel").textContent=HUMAN_LABELS[2];var _ta=document.getElementById("preGenCustomInstr");if(_ta)_ta.value="";document.getElementById("preGenOverlay").style.display="flex"}
 function closePreGen(){document.getElementById("preGenOverlay").style.display="none"}
 function selectPreGenTone(el,tone){_preGenTone=tone;document.querySelectorAll("#preGenToneRow .tone-chip").forEach(b=>b.classList.remove("on"));el.classList.add("on")}
 function selectPreGenLength(el,len){_preGenLength=len;document.querySelectorAll("#preGenLengthRow .tone-chip").forEach(b=>b.classList.remove("on"));el.classList.add("on")}
 function updateHumanLabel(val){_preGenHuman=parseInt(val);document.getElementById("humanLabel").textContent=HUMAN_LABELS[val]||""}
-function confirmGenerate(){closePreGen();generateEmail(_preGenCorId,_preGenTone,_preGenHuman,_preGenLength)}
+function confirmGenerate(){_preGenCustomInstr=(document.getElementById("preGenCustomInstr")||{}).value||"";closePreGen();generateEmail(_preGenCorId,_preGenTone,_preGenHuman,_preGenLength,_preGenCustomInstr)}
 
 const TOUCH_PROMPTS=["Write a cold outreach email (first touch).","Write a follow-up email (second touch, referencing first outreach ~1 week ago).","Write a short breakup email (third touch — brief, friendly, leaves door open)."];
 
 function getTitleAngle(role){
-  if(!role)return "";
+  if(!role)return"";
   var r=role.toLowerCase();
   if(/ceo|chief exec|founder|president|owner|managing partner/.test(r))
-    return "CONTACT IS CEO/PRESIDENT — pitch at the strategic level. They care about company valuation, EBITDA impact, competitive positioning, and growth. Frame real estate as a lever on overall company performance. Keep it high-level — no operational detail. One sharp strategic point is better than three tactical ones.";
-  if(/cfo|chief financial|finance|controller|treasurer|vp finance/.test(r))
-    return "CONTACT IS CFO — they care about cost reduction, EBITDA impact, hidden liabilities, and financial risk exposure. Lead with specific savings potential: CAM audit recoveries, overpayments in acquired leases, and rent reduction outcomes. Use numbers and percentages where possible. Frame real estate as a financial risk with a clear ROI on fixing it.";
-  if(/cdo|chief dev|development|chief growth|growth|expansion|site selection|new markets/.test(r))
-    return "CONTACT IS CDO/GROWTH — they care about opening locations fast, market analytics, and de novo execution. Lead with business intelligence tools, market scoring, demographic data, and how we accelerate the expansion pipeline with better site selection data.";
-  if(/coo|chief oper|operations|chief of staff/.test(r))
-    return "CONTACT IS COO/OPERATIONS — they care about removing operational burden and centralizing processes. Lead with how our lease admin removes workload from internal teams, consolidates portfolio data into one place, and streamlines day-to-day real estate overhead.";
-  if(/general counsel|chief legal|counsel|legal|attorney/.test(r))
-    return "CONTACT IS LEGAL — they care about lease compliance, hidden liabilities in acquired agreements, and data accuracy. Lead with lease abstraction, CAM audit rights, and risk exposure in legacy or acquired leases.";
-  if(/real estate|facilities|portfolio manager|property/.test(r))
-    return "CONTACT IS REAL ESTATE/FACILITIES — they manage this day-to-day and need execution support. Lead with lease admin offload, CAM reconciliation, and portfolio analytics. Be specific about process and tools — they'll appreciate it.";
-  return "";
+    return"CONTACT IS CEO/PRESIDENT: Keep it high-level and strategic. They care about company valuation, EBITDA impact, growth. Frame real estate as a lever on overall performance.";
+  if(/cfo|chief financial|finance|controller|treasurer/.test(r))
+    return"CONTACT IS CFO: Lead with cost reduction and financial risk. CAM audit recoveries, overpayments in acquired leases, concrete savings. Use numbers and percentages. Frame real estate as a financial risk with clear ROI.";
+  if(/cdo|chief dev|development|chief growth|growth|expansion|site selection/.test(r))
+    return"CONTACT IS CDO/GROWTH: Lead with de novo execution, market analytics, and site selection intelligence. They care about opening locations fast with better data. Business intelligence tools and market scoring are the hook.";
+  if(/coo|chief oper|operations/.test(r))
+    return"CONTACT IS COO/OPERATIONS: Lead with removing operational burden. Centralized lease admin, portfolio data in one place, streamlining day-to-day RE overhead.";
+  if(/counsel|legal|attorney/.test(r))
+    return"CONTACT IS LEGAL/COUNSEL: Lead with lease compliance, hidden liabilities in acquired agreements, and data accuracy. CAM audit rights and risk exposure in legacy leases.";
+  return"";
 }
 
-async function generateEmail(corId,preGenTone,preGenHuman,preGenLength){
+async function generateEmail(corId,preGenTone,preGenHuman,preGenLength,customInstr){
   const c=COS_ALL().find(co=>co.id===corId);if(!c)return;
   const apiKey=getAPIKey();if(!apiKey){showToast("Add API key in Settings");return}
   const btn=document.getElementById("genBtn-"+corId);const gs=document.getElementById("gen-state-"+corId);const gb=document.getElementById("gen-body-"+corId);
@@ -1063,62 +1100,36 @@ async function generateEmail(corId,preGenTone,preGenHuman,preGenLength){
   const wordCount={short:"under 120 words",medium:"around 160-180 words",long:"around 220-250 words"}[preGenLength||"short"]||"under 150 words";
   const humanInstr=humanLevel===1?"HUMAN VOICE: Write like a real 24-year-old BD guy. Short punchy sentences. No em-dashes at all. No semicolons. No cliche openers. Contractions everywhere. Zero AI-isms.":humanLevel===2?"NATURAL VOICE: Real person, not AI. Avoid em-dashes. No cliche openers. Contractions. Varied sentence length.":"PROFESSIONAL VOICE: Clear and polished but human. No em-dashes.";
   const fmtInstr=emailFormat==="linkedin"?"FORMAT: LinkedIn InMail. Max 120 words. No formal sign-off.":emailFormat==="call"?"FORMAT: Call script — opening line, value prop, 2 discovery questions, CTA. Use Script: not Subject:.":"FORMAT: Cold email.";
-    // Pull cached news and filter to recent/relevant only (within 120 days)
-  var _newsCache=getNewsCache();var _companyNews=_newsCache[corId];var newsHookInstr="";
+  // Build news hook + title angle context
+  var _nc=getNewsCache();var _cn=_nc[corId];var newsHookInstr="";
   var _titleAngle=getTitleAngle(tRole);
-  if(_companyNews&&_companyNews.articles&&_companyNews.articles.length){
+  if(_cn&&_cn.articles&&_cn.articles.length){
     var _now=Date.now();
-    var _recentArticles=_companyNews.articles.filter(function(a){
-      if(!a.date)return false;
-      var d=new Date(a.date);if(isNaN(d))return false;
-      return (_now-d)<(120*24*60*60*1000);
+    var _ra=_cn.articles.filter(function(a){
+      if(!a.date)return false;var d=new Date(a.date);if(isNaN(d))return false;
+      return(_now-d)<(120*24*60*60*1000);
     });
-    if(_recentArticles.length){
-      newsHookInstr="SPECIFIC NEWS HOOK — use ONE of these real recent articles as your opening. Pick the most relevant to the pitch angle. Reference it naturally like you read it. Only use it if it is relevant to the outreach. Do not force an irrelevant article:\n"+_recentArticles.slice(0,5).map(function(a,i){return(i+1)+'. "'+a.title+'" ('+a.source+(a.date?', '+a.date:'')+')';}).join("\n");
+    if(_ra.length){
+      newsHookInstr="SPECIFIC NEWS HOOK: Use ONE of these real recent articles as your opening if relevant. Reference it naturally. Skip if it has nothing to do with the pitch:\n"+_ra.slice(0,5).map(function(a,i){return(i+1)+'. "'+a.title+'" ('+(a.source||"")+(a.date?", "+a.date:"")+")";}).join("\n");
     } else {
-      newsHookInstr="NEWS HOOK: No recent articles available (all older than 120 days). Open with a specific observation about this company's known strategic situation instead — an acquisition, market expansion, leadership change, or growth trajectory. Be specific, not generic.";
+      newsHookInstr="NEWS HOOK: All cached articles are older than 120 days. Open with a specific observation about the company's known recent situation instead. Be specific, not generic.";
     }
-  } else if(_companyNews&&_companyNews.text){
-    newsHookInstr="INTEL HOOK — pick ONE specific detail from this briefing as your opener, only if it represents a real recent development:\n"+_companyNews.text.slice(0,500);
+  } else if(_cn&&_cn.text){
+    newsHookInstr="INTEL HOOK: Pick ONE specific detail from this as your opener only if it is recent:\n"+_cn.text.slice(0,400);
   } else {
-    newsHookInstr="NEWS HOOK: No cached news. Open with a SPECIFIC reference to something real about this company you know — a known acquisition, expansion, leadership change, or strategic move. Do NOT use generic openers.";
+    newsHookInstr="NEWS HOOK: No cached news. Open with a SPECIFIC reference to something real about this company you know. No generic openers.";
   }
-    const prompt=`You are writing BD outreach for ${senderName} at Mohr Partners — the largest tenant rep MBE in the US. Tenant rep only (no landlord conflicts). Services: lease admin, CAM audits, portfolio optimization, Bill Pay, BI/site selection, international coverage.
-
-CRITICAL STYLE RULES — these emails must sound like they were written by a real BD person, not AI:
-- Open with something SPECIFIC and PERSONAL: a congrats on a new role, a news article you saw, a podcast you listened to, running across their location, a LinkedIn connection, a shared event, or reconnecting after a gap. NEVER start with "I hope this email finds you well" or any generic opener.
-- Include a TRIGGER LINE explaining why you're reaching out right now: "I noticed...", "I stumbled on...", "I keep seeing...", "I was recently touring a client and..."
-- Use ONE specific case study or result to anchor the pitch — not a feature list. Real examples from Mohr's work: a PE consulting turnaround group targeting 16% ($1.3M) annual real estate cost reduction; an MSO client whose Lease Admin/CAM audit work supported their $1.9B sale to Cardinal Health; a healthcare logistics group where we negotiated a 38% rental reduction; a dermatology practice where we secured $43K in lease incentives. Reference these qualitatively, not as verified facts for this prospect.
-- Acknowledge it may not be a priority: "I realize this may not be a priority for you" or "this may or may not be relevant right now" — this disarms and builds trust.
-- CTA must be soft and low-pressure: "brief call", "30 minutes", "no pressure at all — always happy to be a resource."
-- Personality is allowed: light self-deprecation, a shared joke if relevant, warmth. These emails have had lines like "we could wrestle for the portfolio work?" and "I must admit I'm more suited to lifting heavy objects than cardio."
-- Sign off casually: just the sender name, maybe "Best," or "Thanks!" — no formal title block in the email body.
-- NO bullet points (except detailed follow-up overviews). NO semicolons. NO em-dashes used in an AI-polished way. NO "I hope this finds you well." NO stiff corporate language.
-
-Company: ${c.name} | ${c.cat} | HQ: ${c.hq||""}
-Target: ${tName} (${tRole})
-Pitch angle: ${angle} | Tone: ${tone}
-Background context (do NOT cite as verified facts): ${c.problem||""}
-
-${newsHookInstr}
+  const prompt=`BD outreach for ${senderName} at Mohr Partners — largest tenant rep MBE. Tenant rep only. IMPORTANT: Do not cite specific numbers as verified facts. Reference qualitatively.\n\nCompany: ${c.name} | ${c.cat} | HQ: ${c.hq||""}\nTarget: ${tName} (${tRole})\nAngle: ${angle} | Tone: ${tone}\nBackground: ${c.problem||""}\n\n${newsHookInstr}
 
 ${_titleAngle}
 
-BROKER BLACKOUT: Do NOT mention any incumbent broker, competing firm, or existing real estate vendor (JLL, CBRE, Cushman & Wakefield, Colliers, Avison Young, Cresa, or any other firm) in the email — not by name, not by implication. Pretend you have no knowledge of any existing broker relationship. Do not say anything like "I know you work with..." or "even if you have an existing broker..."
+BROKER BLACKOUT: Never mention any broker or competing firm (JLL, CBRE, Cushman, Colliers, Avison Young, Cresa, etc.) by name or implication.
 
-EM DASH BAN — ABSOLUTE RULE: Never use em dashes (—) or en dashes (–) anywhere in this email. Not once. Not even close to one. If you feel the urge to use a dash mid-sentence, use a comma, a period, or rewrite the sentence. This is a hard rule with zero exceptions.
+EM DASH RULE — ABSOLUTE: Never use em dashes (—) or en dashes (–). Not once. Use a comma or rewrite.
 
-${humanInstr}
-Length: ${wordCount}
-${fmtInstr}
-${TOUCH_PROMPTS[seqTab]}
+${customInstr?"SENDER INSTRUCTIONS (follow these closely, override other guidance):\n"+customInstr:""}
 
-Output format: Subject: [line]
-
-[body]
-
-Sign off: ${senderName}${sig?"\n"+sig:""}
-Start with Subject:`;
+${humanInstr}\nLength: ${wordCount}\n${fmtInstr}\n${TOUCH_PROMPTS[seqTab]}\n\nOutput format: Subject: [line]\n\n[body] — No bullets — One timely trigger — Low-pressure CTA — Sign off: ${senderName} | Mohr Partners${sig?"\n"+sig:""}\nStart with Subject:`;
   try{
     const resp=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,messages:[{role:"user",content:prompt}]})});
     const data=await resp.json();gs.style.display="none";gb.style.display="block";btn.disabled=false;
@@ -1126,8 +1137,7 @@ Start with Subject:`;
     const raw=(data.content||[]).map(b=>b.text||"").join("").trim();
     const sm=raw.match(/^(?:Subject|Script):\s*(.+)/im);const subject=sm?sm[1].trim():"";
     const bodyRaw=sm?raw.slice(raw.indexOf(sm[0])+sm[0].length).trim():raw;
-    // Strip em dashes and en dashes — hard rule, belt-and-suspenders
-    const body=bodyRaw.replace(/\u2014/g,",").replace(/\u2013/g,",").replace(/ \- /g," ").trim();
+    const body=bodyRaw.replace(/\u2014/g,",").replace(/\u2013/g,",").trim();
     const subjectClean=subject.replace(/\u2014/g,",").replace(/\u2013/g,",").trim();
     pSet("draft_subj_"+corId,subjectClean);const bodies=pGet("draft_bodies_"+corId)||["","",""];bodies[seqTab]=body;pSet("draft_bodies_"+corId,bodies);
     const se=document.getElementById("subj-"+corId);if(se)se.value=subjectClean;const be=document.getElementById("body-"+corId+"-"+seqTab);if(be)be.value=body;
@@ -1315,48 +1325,32 @@ function openCORViewer(corId){
 function closeCORViewer(){document.getElementById("corViewerOverlay").style.display="none"}
 function deleteCustomCOR(id){if(!confirm("Remove this COR?"))return;saveCustomCORs(getCustomCORs().filter(c=>c.id!==id));closeCORViewer();renderCORs();renderNewsPage();showToast("COR removed.")}
 
-// NEWS — articles + AI briefing
+// NEWS — simple search
 let _newsCurCOR=null;
-
-function renderNewsPage(){ newsRenderHistory(); }
-
-// Show all companies when focused; filter as user types
-function newsSearchFocus(){
-  const q=(document.getElementById("newsSearchInput")||{}).value||"";
-  if(!q) newsShowAllDropdown();
-  else newsSearchType();
-}
-
-function newsShowAllDropdown(){
-  var dd=document.getElementById("newsDropdown");if(!dd)return;
-  var cache=getNewsCache();var all=COS_ALL();
-  dd.style.display="block";
-  var rows=all.map(function(co){
-    return "<div onclick=\"newsSelectCOR("+co.id+")\" style=\"padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--gl);display:flex;align-items:center;justify-content:space-between\" onmouseenter=\"this.style.background='var(--off)'\" onmouseleave=\"this.style.background=''\"><div><span style=\"font-weight:600;color:var(--navy)\">"+co.name+"</span> <span style=\"font-size:11px;color:var(--gm)\">"+co.cat+"</span></div>"+(cache[co.id]?"<span style=\"font-size:10px;color:#2e7d32;font-weight:600\">Loaded</span>":"")+"</div>";
-  });
-  dd.innerHTML="<div style=\"padding:8px 14px;font-size:10px;font-weight:700;color:var(--gm);text-transform:uppercase;letter-spacing:.5px;background:var(--off);border-bottom:1px solid var(--gl)\">"+all.length+" companies</div>"+rows.join("");
-}
-
+function renderNewsPage(){newsRenderHistory()}
 function newsSearchType(){
-  var q=((document.getElementById("newsSearchInput")||{}).value||"").trim();
-  var dd=document.getElementById("newsDropdown");
-  if(!q){newsShowAllDropdown();return;}
-  var cache=getNewsCache();
-  var matches=COS_ALL().filter(function(co){return co.name.toLowerCase().includes(q.toLowerCase());});
-  if(!matches.length){if(dd)dd.style.display="none";return;}
+  const q=((document.getElementById("newsSearchInput")||{}).value||"").trim();
+  const dd=document.getElementById("newsDropdown");
+  if(!q||q.length<2){if(dd)dd.style.display="none";return}
+  const cache=getNewsCache();
+  const matches=COS_ALL().filter(c=>c.name.toLowerCase().includes(q.toLowerCase())).slice(0,8);
+  if(!matches.length){if(dd)dd.style.display="none";return}
   if(dd){
     dd.style.display="block";
-    var rows=matches.map(function(co){
-      return "<div onclick=\"newsSelectCOR("+co.id+")\" style=\"padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--gl);display:flex;align-items:center;justify-content:space-between\" onmouseenter=\"this.style.background='var(--off)'\" onmouseleave=\"this.style.background=''\"><div><span style=\"font-weight:600;color:var(--navy)\">"+co.name+"</span> <span style=\"font-size:11px;color:var(--gm)\">"+co.cat+"</span></div>"+(cache[co.id]?"<span style=\"font-size:10px;color:#2e7d32;font-weight:600\">Loaded</span>":"")+"</div>";
-    });
-    dd.innerHTML=rows.join("");
+    dd.innerHTML=matches.map(c=>`<div onclick="newsSelectCOR(${c.id})" style="padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--gl);display:flex;align-items:center;justify-content:space-between" onmouseover="this.style.background='var(--off)'" onmouseout="this.style.background='#fff'"><div><span style="font-weight:600;color:var(--navy)">${c.name}</span> <span style="font-size:11px;color:var(--ts)">${c.cat}</span></div>${cache[c.id]?"<span style='font-size:10px;color:#2e7d32;font-weight:600'>Scanned</span>":"<span style='font-size:10px;color:var(--gm)'>Not scanned</span>"}</div>`).join("");
   }
 }
-
-// Close dropdown when clicking outside
+// Delegated click: close news dropdown + handle angle remove buttons
 document.addEventListener("click",function(e){
-  const inp=document.getElementById("newsSearchInput");const dd=document.getElementById("newsDropdown");
+  var inp=document.getElementById("newsSearchInput");
+  var dd=document.getElementById("newsDropdown");
   if(dd&&!dd.contains(e.target)&&e.target!==inp)dd.style.display="none";
+  if(e.target&&e.target.getAttribute&&e.target.getAttribute("data-remove")==="1"){
+    e.stopPropagation();
+    var cid=e.target.getAttribute("data-cid");
+    var ridx=parseInt(e.target.getAttribute("data-idx"));
+    if(cid&&!isNaN(ridx))removeAngleItem(cid,ridx);
+  }
 });
 
 function newsSelectCOR(corId){
@@ -1364,172 +1358,44 @@ function newsSelectCOR(corId){
   _newsCurCOR=c;
   const inp=document.getElementById("newsSearchInput");if(inp)inp.value=c.name;
   const dd=document.getElementById("newsDropdown");if(dd)dd.style.display="none";
-  // Show result area
-  document.getElementById("newsResultArea").style.display="block";
-  document.getElementById("newsResultName").textContent=c.name;
-  document.getElementById("newsResultMeta").textContent=c.cat+(c.hq?" · "+c.hq:"");
-  // Hide intel panel until requested
-  document.getElementById("newsIntelPanel").style.display="none";
-  // Check cached intel
   const cached=getNewsCache()[corId];
-  if(cached){
-    document.getElementById("newsIntelAge").textContent="Briefing from "+new Date(cached.scanned).toLocaleDateString("en-US",{month:"short",day:"numeric"});
-    document.getElementById("newsIntelBody").innerHTML="<p style='white-space:pre-wrap;line-height:1.75'>"+(cached.text||"")+"</p>";
-  }
-  // Load articles
-  newsLoadArticles();
-  newsRenderHistory();
+  if(cached)newsShowResult(c,cached.text,cached.scanned);else newsSearchScan();
 }
-
-async function newsLoadArticles(){
-  const c=_newsCurCOR;if(!c)return;
-  const feed=document.getElementById("newsArticlesFeed");
-  if(feed)feed.innerHTML='<div style="padding:22px;text-align:center;color:var(--ts);display:flex;align-items:center;justify-content:center;gap:8px"><div class="spin"></div>Searching for recent news articles...</div>';
-  const refreshBtn=document.getElementById("newsRefreshBtn");
-  if(refreshBtn){refreshBtn.disabled=true;refreshBtn.textContent="Loading..."}
-  try{
-    const articles=await fetchCompanyNews(c.name);
-    if(!articles.length){
-      if(feed)feed.innerHTML='<div style="padding:22px;text-align:center;color:var(--gm);font-size:13px">No recent articles found for '+c.name+'. Try the AI Briefing instead.</div>';
-    } else {
-      renderNewsArticles(articles);
-      // Save to news cache (article list only, not intel)
-      const cache=getNewsCache();
-      if(!cache[c.id])cache[c.id]={scanned:null,text:null,company:c.name};
-      cache[c.id].lastArticles=new Date().toISOString();
-      cache[c.id].articles=articles.slice(0,10).map(function(a){return{title:a.title,source:a.source,date:a.relTime||a.date,url:a.url};});
-      localStorage.setItem("shared_newsCache",JSON.stringify(cache));
-      newsRenderHistory();
-    }
-  }catch(e){
-    if(feed)feed.innerHTML='<div style="padding:22px;color:#c62828;font-size:13px;text-align:center">Error loading news: '+e.message+'<br><small style="color:var(--gm)">Try the AI Briefing button instead.</small></div>';
-  }
-  if(refreshBtn){refreshBtn.disabled=false;refreshBtn.textContent="↻ Refresh"}
-}
-
-async function fetchCompanyNews(companyName){
-  var apiKey=getAPIKey();
-  if(!apiKey)throw new Error("No API key — add it in Settings first");
-  var prompt="Search for 10-12 recent news articles about \""+companyName+"\".\n\nFocus on: expansions, acquisitions, new locations, leadership changes, financial results, real estate moves, M&A activity.\n\nReturn ONLY a valid JSON array, no markdown, no other text:\n[{\"title\":\"article title\",\"url\":\"https://direct-link-to-article.com\",\"source\":\"Publisher Name\",\"date\":\"Month DD YYYY\",\"summary\":\"2 sentence summary of the article\"}]\n\nInclude real direct URLs to each article. Return the 10-12 most recent articles you can find.";
-  var messages=[{role:"user",content:prompt}];
-  var tools=[{"type":"web_search_20250305","name":"web_search"}];
-  var iteration=0;
-  while(iteration<6){
-    iteration++;
-    var resp=await fetch("https://api.anthropic.com/v1/messages",{
-      method:"POST",
-      headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-      body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:3000,tools:tools,messages:messages})
-    });
-    var data=await resp.json();
-    if(!resp.ok)throw new Error((data.error&&data.error.message)||"API error "+resp.status);
-    if(data.stop_reason==="end_turn"){
-      var text=(data.content||[]).filter(function(b){return b.type==="text";}).map(function(b){return b.text;}).join("").trim();
-      return parseNewsJSON(text);
-    }
-    if(data.stop_reason==="tool_use"){
-      messages.push({role:"assistant",content:data.content});
-      var toolResults=(data.content||[]).filter(function(b){return b.type==="tool_use";}).map(function(b){return{type:"tool_result",tool_use_id:b.id,content:""};});
-      if(toolResults.length)messages.push({role:"user",content:toolResults});
-      continue;
-    }
-    // Unknown stop — try to extract text anyway
-    var txt=(data.content||[]).filter(function(b){return b.type==="text";}).map(function(b){return b.text;}).join("").trim();
-    if(txt)return parseNewsJSON(txt);
-    break;
-  }
-  throw new Error("No articles returned. Check API key in Settings.");
-}
-
-function parseNewsJSON(text){
-  var cleaned=text.replace(/```json\n?/g,"").replace(/```\n?/g,"").trim();
-  var start=cleaned.indexOf("[");var end=cleaned.lastIndexOf("]");
-  if(start>=0&&end>start)cleaned=cleaned.slice(start,end+1);
-  var articles;
-  try{articles=JSON.parse(cleaned);}
-  catch(e){throw new Error("Could not parse news results. Try again.");}
-  return articles.map(function(a){
-    var relTime="";
-    if(a.date){var d=new Date(a.date);if(!isNaN(d)){var diff=Math.floor((Date.now()-d)/(1000*60*60*24));relTime=diff===0?"Today":diff===1?"Yesterday":diff<7?diff+"d ago":diff<30?Math.floor(diff/7)+"w ago":a.date;}else{relTime=a.date;}}
-    return{title:a.title||"",url:a.url||"#",source:a.source||"",date:a.date||"",relTime:relTime,description:a.summary||""};
-  });
-}
-
-function renderNewsArticles(articles){
-  const feed=document.getElementById("newsArticlesFeed");if(!feed)return;
-  if(!articles.length){feed.innerHTML='<div style="padding:22px;text-align:center;color:var(--gm);font-size:13px">No articles found.</div>';return;}
-  feed.innerHTML=articles.map(function(a,i){
-    const borderStyle=i===articles.length-1?"":"border-bottom:1px solid var(--gl);";
-    const descHtml=a.description?"<div style=\"font-size:12px;color:var(--ts);line-height:1.55;margin-bottom:7px\">"+a.description+(a.description.length>=220?"...":"")+"</div>":"";
-    const sourceHtml=a.source?"<span style=\"font-size:11px;font-weight:600;color:var(--navy);background:var(--off);padding:2px 8px;border-radius:20px\">"+a.source+"</span>":"";
-    const timeHtml=a.relTime?"<span style=\"font-size:11px;color:var(--gm)\">"+a.relTime+"</span>":"";
-    return "<div style=\"padding:16px 20px;"+borderStyle+"\">"
-      +"<div style=\"flex:1;min-width:0\">"
-      +"<a href=\""+a.link+"\" target=\"_blank\" rel=\"noopener\" style=\"font-size:14px;font-weight:700;color:var(--navy);text-decoration:none;line-height:1.4;display:block;margin-bottom:5px\">"+a.title+"</a>"
-      +descHtml
-      +"<div style=\"display:flex;align-items:center;gap:10px;flex-wrap:wrap\">"
-      +sourceHtml+timeHtml
-      +"<a href=\""+a.link+"\" target=\"_blank\" rel=\"noopener\" style=\"font-size:11px;color:var(--gold3);font-weight:600;text-decoration:none\">Read &#8250;</a>"
-      +"</div></div></div>";
-  }).join("");
-}
-
-// AI Briefing (existing scan functionality, now in collapsible panel)
 async function newsSearchScan(){
   const c=_newsCurCOR;if(!c){showToast("Select a company first");return}
   const apiKey=getAPIKey();if(!apiKey){showToast("Add API key in Settings first");return}
-  const panel=document.getElementById("newsIntelPanel");
-  const body=document.getElementById("newsIntelBody");
-  const age=document.getElementById("newsIntelAge");
-  const btn=document.getElementById("newsIntelBtn");
-  panel.style.display="block";
-  if(body)body.innerHTML='<div style="display:flex;align-items:center;gap:8px;color:var(--ts)"><div class="spin"></div>Generating intel briefing...</div>';
-  if(age)age.textContent="";
-  if(btn){btn.disabled=true;btn.textContent="Generating..."}
+  const btn=document.getElementById("newsRescanBtn");if(btn){btn.disabled=true;btn.textContent="Scanning..."}
+  document.getElementById("newsResult").style.display="block";
+  document.getElementById("newsResultName").textContent=c.name;
+  document.getElementById("newsResultMeta").textContent=c.cat+(c.hq?" \u00b7 "+c.hq:"");
+  document.getElementById("newsResultAge").textContent="";
+  document.getElementById("newsResultBody").innerHTML="<div style='display:flex;align-items:center;gap:8px;color:var(--ts)'><div class='spin'></div>Generating intel briefing...</div>";
   try{
     const prompt="You are a CRE intelligence analyst. Write a briefing about "+c.name+" for a tenant rep broker at Mohr Partners.\n\nContext: "+(c.problem||"")+"\nSector: "+c.cat+" | HQ: "+(c.hq||"US")+"\n\nIn plain prose, no bullet points, no em dashes: (1) What is this company doing from a real estate perspective recently? (2) What signals suggest they need help with their portfolio? (3) What is the single strongest Mohr Partners angle? Under 200 words. Direct and specific.";
     const resp=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:500,messages:[{role:"user",content:prompt}]})});
-    const data=await resp.json();
-    if(!resp.ok)throw new Error((data.error&&data.error.message)||"API error "+resp.status);
-    const text=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("").trim();
-    if(!text)throw new Error("Empty response");
-    const cache=getNewsCache();
-    cache[c.id]=Object.assign(cache[c.id]||{},{text,scanned:new Date().toISOString(),company:c.name});
-    localStorage.setItem("shared_newsCache",JSON.stringify(cache));
-    if(body)body.innerHTML="<p style='white-space:pre-wrap;line-height:1.75'>"+text+"</p>";
-    if(age)age.textContent="Generated "+new Date().toLocaleDateString("en-US",{month:"short",day:"numeric"});
-    newsRenderHistory();showToast("AI briefing ready for "+c.name);
-  }catch(e){
-    if(body)body.innerHTML="<div style='color:#c62828;font-size:13px'>Error: "+e.message+"</div>";
-    showToast("Error: "+e.message);
-  }
-  if(btn){btn.disabled=false;btn.textContent="✪ AI Briefing"}
+    const data=await resp.json();if(!resp.ok)throw new Error((data.error&&data.error.message)||"API error "+resp.status);
+    const text=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("").trim();if(!text)throw new Error("Empty response");
+    const cache=getNewsCache();cache[c.id]={text,scanned:new Date().toISOString(),company:c.name};localStorage.setItem("shared_newsCache",JSON.stringify(cache));
+    newsShowResult(c,text,new Date().toISOString());newsRenderHistory();showToast("Intel ready for "+c.name);
+  }catch(e){document.getElementById("newsResultBody").innerHTML="<div style='color:#c62828;font-size:13px'>Error: "+e.message+"</div>";showToast("Error: "+e.message)}
+  if(btn){btn.disabled=false;btn.textContent="Re-scan"}
 }
-
 function newsShowResult(c,text,scannedISO){
-  // Legacy compat — show intel panel
-  const panel=document.getElementById("newsIntelPanel");
-  const body=document.getElementById("newsIntelBody");
-  const age=document.getElementById("newsIntelAge");
-  if(panel)panel.style.display="block";
-  if(body)body.innerHTML="<p style='white-space:pre-wrap;line-height:1.75'>"+(text||"")+"</p>";
-  if(age&&scannedISO)age.textContent="Briefing from "+new Date(scannedISO).toLocaleDateString("en-US",{month:"short",day:"numeric"});
+  document.getElementById("newsResult").style.display="block";
+  document.getElementById("newsResultName").textContent=c.name;
+  document.getElementById("newsResultMeta").textContent=c.cat+(c.hq?" \u00b7 "+c.hq:"");
+  document.getElementById("newsResultAge").textContent=scannedISO?"Scanned "+new Date(scannedISO).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"";
+  document.getElementById("newsResultBody").innerHTML="<p style='line-height:1.75;white-space:pre-wrap'>"+(text||"No results.")+"</p>";
 }
-
 function newsRenderHistory(){
-  var cache=getNewsCache();var el=document.getElementById("newsHistory");if(!el)return;
-  var entries=Object.entries(cache).filter(function(e){return e[1].lastArticles||e[1].scanned;}).sort(function(a,b){return new Date(b[1].lastArticles||b[1].scanned||0)-new Date(a[1].lastArticles||a[1].scanned||0);});
-  if(!entries.length){el.innerHTML="<div style=\"font-size:12px;color:var(--gm)\">No companies loaded yet. Search above to get started.</div>";return;}
-  el.innerHTML=entries.slice(0,20).map(function(entry){
-    var id=entry[0];var n=entry[1];
-    var co=COS_ALL().find(function(x){return x.id==id;});
-    var name=co?co.name:(n.company||"Unknown");
-    var age=(n.lastArticles||n.scanned)?new Date(n.lastArticles||n.scanned).toLocaleDateString("en-US",{month:"short",day:"numeric"}):"";
-    var intelBadge=n.scanned?"<span style=\"font-size:10px;background:rgba(46,125,50,.1);color:#2e7d32;font-weight:700;padding:2px 7px;border-radius:20px\">\u272a Briefing</span>":"";
-    return "<div style=\"background:#fff;border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;border:1.5px solid var(--gl)\" onclick=\"newsSelectCOR("+id+")\"><div style=\"flex:1\"><div style=\"font-size:13px;font-weight:600;color:var(--navy)\">"+name+"</div><div style=\"font-size:11px;color:var(--ts)\">"+(co?co.cat:"")+"</div></div><div style=\"display:flex;align-items:center;gap:8px\">"+intelBadge+"<div style=\"font-size:11px;color:var(--gm)\">"+age+"</div></div><div style=\"font-size:11px;color:var(--gold3);font-weight:600\">Open &#8250;</div></div>";
+  const cache=getNewsCache();const el=document.getElementById("newsHistory");if(!el)return;
+  const entries=Object.entries(cache).sort((a,b)=>new Date(b[1].scanned)-new Date(a[1].scanned));
+  if(!entries.length){el.innerHTML="<div style='font-size:12px;color:var(--gm)'>No companies scanned yet. Search above to get started.</div>";return}
+  el.innerHTML=entries.slice(0,20).map(([id,n])=>{
+    const c=COS_ALL().find(co=>co.id==id);const name=c?c.name:(n.company||"Unknown");const age=n.scanned?new Date(n.scanned).toLocaleDateString("en-US",{month:"short",day:"numeric"}):"";
+    return`<div style="background:#fff;border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;border:1.5px solid var(--gl);transition:border-color .15s" onclick="newsSelectCOR(${id})" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--gl)'"><div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--navy)">${name}</div><div style="font-size:11px;color:var(--ts)">${c?c.cat:""}</div></div><div style="font-size:11px;color:var(--gm)">${age}</div><div style="font-size:11px;color:var(--gold3);font-weight:600">View &#8250;</div></div>`;
   }).join("");
 }
-
 
 // SETTINGS
 function showSetting(id,el){
