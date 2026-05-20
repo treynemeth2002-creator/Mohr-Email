@@ -339,6 +339,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
     <button type="button" class="ntab" onclick="showPage('touches',this)">&#127919; Touches</button>
     <button type="button" class="ntab" onclick="showPage('notes',this)">&#128221; Notes</button>
     <button type="button" class="ntab" onclick="showPage('winloss',this)">&#127942; Win/Loss</button>
+    <button type="button" class="ntab" onclick="showPage('followups',this)">&#128197; Follow-Ups</button>
     <button type="button" class="ntab" onclick="showPage('settings',this)">&#9881; Settings</button>
   </div>
   <div class="nav-r">
@@ -390,6 +391,14 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
   <div class="dash-grid">
     <div class="card"><div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:14px">&#128197; Follow-Up Queue</div><div id="fuList"><div style="color:var(--gm);font-size:12px">No follow-ups set yet.</div></div></div>
     <div class="card"><div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:14px">&#128200; Pipeline Overview</div><div class="pipe-mini" id="pipeMini"></div></div>
+  </div>
+  <!-- Recent Outreach -->
+  <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden;margin-bottom:20px">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--gl);display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:13px;font-weight:700;color:var(--navy)">&#128200; Recent Outreach</span>
+      <span style="font-size:11px;color:var(--ts)">Last touchpoint per company</span>
+    </div>
+    <div id="recentOutreach" style="max-height:320px;overflow-y:auto"></div>
   </div>
 </div>
 
@@ -621,6 +630,39 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
 </div>
 <button type="button" id="objFab" onclick="toggleObjections()" style="position:fixed;right:84px;bottom:22px;z-index:200;background:#fff;border:2px solid var(--gold);border-radius:50%;width:46px;height:46px;cursor:pointer;display:none;align-items:center;justify-content:center;font-size:18px;box-shadow:0 4px 16px rgba(0,0,0,.15)" title="Objection Handlers">&#128737;</button>
 
+<div class="page" id="page-followups">
+  <div class="ph">
+    <div><div class="pt">Follow-Ups</div><div class="ps2">Your scheduled reach-outs and pipeline tracker</div></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span id="fuOverdueCount" style="font-size:12px;font-weight:700;color:#c62828"></span>
+      <span id="fuTodayCount" style="font-size:12px;font-weight:700;color:var(--warn)"></span>
+    </div>
+  </div>
+
+  <!-- Summary stats -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px" id="fuStats"></div>
+
+  <!-- View toggle tabs -->
+  <div style="display:flex;gap:0;background:#fff;border-radius:10px;padding:4px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:20px;width:fit-content">
+    <button type="button" id="fuTabDate" onclick="switchFUTab('date')" style="padding:7px 20px;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;background:var(--navy);color:#fff;transition:all .15s">&#128197; By Date</button>
+    <button type="button" id="fuTabStage" onclick="switchFUTab('stage')" style="padding:7px 20px;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;background:transparent;color:var(--ts);transition:all .15s">&#128200; By Stage</button>
+  </div>
+
+  <!-- By Date view -->
+  <div id="fuDateView">
+    <div id="fuOverdueSection"></div>
+    <div id="fuTodaySection"></div>
+    <div id="fuWeekSection"></div>
+    <div id="fuLaterSection"></div>
+    <div id="fuNoDateSection"></div>
+  </div>
+
+  <!-- By Stage view -->
+  <div id="fuStageView" style="display:none">
+    <div id="fuStageContent"></div>
+  </div>
+</div>
+
 <div class="page" id="page-settings">
   <div class="ph"><div><div class="pt">Settings</div><div class="ps2">Profile, preferences, API key, and cloud sync</div></div></div>
   <div class="settings-grid">
@@ -734,6 +776,101 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
     <button type="button" class="ai-send" id="aiSend" onclick="sendAI()">&#9658;</button>
   </div>
 </div>
+<!-- LOG TOUCH MODAL -->
+<div class="overlay" id="logTouchCOROverlay" style="display:none">
+  <div class="add-box" style="width:480px">
+    <h2 style="margin-bottom:4px">&#128203; Log This Touch</h2>
+    <div id="ltcCorName" style="color:var(--gm);font-size:12px;margin-bottom:18px"></div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div><label style="display:block;color:var(--gm);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">Type</label>
+        <select id="ltc-type" style="width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:9px 13px;font-size:13px;outline:none">
+          <option>Email</option><option>Call</option><option>LinkedIn</option><option>In-Person</option><option>Other</option>
+        </select>
+      </div>
+      <div><label style="display:block;color:var(--gm);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">Outcome</label>
+        <select id="ltc-outcome" style="width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:9px 13px;font-size:13px;outline:none">
+          <option value="sent">Sent</option><option value="voicemail">Left Voicemail</option><option value="responded">Responded</option><option value="meeting">Meeting Set</option><option value="noreply">No Reply</option>
+        </select>
+      </div>
+    </div>
+
+    <label style="display:block;color:var(--gm);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">Contact</label>
+    <input type="text" id="ltc-contact" placeholder="Contact name" style="width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:9px 13px;font-size:13px;margin-bottom:14px;outline:none">
+
+    <label style="display:block;color:var(--gm);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">Subject / Notes</label>
+    <input type="text" id="ltc-subject" placeholder="Email subject or notes..." style="width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:9px 13px;font-size:13px;margin-bottom:14px;outline:none">
+
+    <div style="background:rgba(200,151,43,.08);border:1px solid rgba(200,151,43,.2);border-radius:8px;padding:14px;margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--gold2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">&#128197; Schedule Follow-Up</div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <input type="date" id="ltc-followup" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:7px 11px;font-size:13px;outline:none;flex:1">
+        <div style="display:flex;gap:6px">
+          <button type="button" onclick="setLTCFollowup(3)" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:6px;color:rgba(255,255,255,.7);padding:5px 10px;font-size:11px;cursor:pointer">+3d</button>
+          <button type="button" onclick="setLTCFollowup(7)" style="background:rgba(200,151,43,.15);border:1px solid rgba(200,151,43,.3);border-radius:6px;color:var(--gold2);padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700">+1 wk</button>
+          <button type="button" onclick="setLTCFollowup(14)" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:6px;color:rgba(255,255,255,.7);padding:5px 10px;font-size:11px;cursor:pointer">+2 wk</button>
+          <button type="button" onclick="setLTCFollowup(30)" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:6px;color:rgba(255,255,255,.7);padding:5px 10px;font-size:11px;cursor:pointer">+1 mo</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button type="button" class="btn-o" onclick="document.getElementById('logTouchCOROverlay').style.display='none'">Cancel</button>
+      <button type="button" class="btn-g" onclick="saveLogTouchCOR()">&#10003; Save &amp; Schedule</button>
+    </div>
+  </div>
+</div>
+
+<!-- ACTIVITY LOG MODAL -->
+<div class="overlay" id="activityOverlay" style="display:none;align-items:flex-start;padding:30px 20px;overflow-y:auto">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:680px;overflow:hidden;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)">
+    <div style="background:var(--navy);padding:18px 24px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div id="actLogTitle" style="font-size:16px;font-weight:700;color:#fff"></div>
+        <div id="actLogSub" style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px"></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button type="button" onclick="openLogActivityForm()" style="background:var(--gold);border:none;color:var(--navy3);border-radius:6px;padding:6px 13px;cursor:pointer;font-size:12px;font-weight:700">+ Log Activity</button>
+        <button type="button" onclick="closeActivityLog()" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">Close</button>
+      </div>
+    </div>
+    <!-- Log form (hidden by default) -->
+    <div id="actLogForm" style="display:none;padding:18px 24px;background:var(--off);border-bottom:1px solid var(--gl)">
+      <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px">Log a touchpoint</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="set-field" style="margin:0"><label>Type</label>
+          <select id="alf-type" style="background:var(--off);border:1.5px solid var(--gl);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--tp);outline:none;width:100%">
+            <option>Email</option><option>Call</option><option>LinkedIn</option><option>In-Person</option><option>Other</option>
+          </select>
+        </div>
+        <div class="set-field" style="margin:0"><label>Date</label>
+          <input type="date" id="alf-date" style="background:var(--off);border:1.5px solid var(--gl);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--tp);outline:none;width:100%">
+        </div>
+        <div class="set-field" style="margin:0"><label>Contact Name</label>
+          <input type="text" id="alf-contact" placeholder="e.g. Brad Lakhia" style="background:var(--off);border:1.5px solid var(--gl);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--tp);outline:none;width:100%">
+        </div>
+        <div class="set-field" style="margin:0"><label>Outcome</label>
+          <select id="alf-outcome" style="background:var(--off);border:1.5px solid var(--gl);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--tp);outline:none;width:100%">
+            <option value="sent">Sent</option><option value="voicemail">Voicemail</option><option value="responded">Responded</option><option value="meeting">Meeting Set</option><option value="noreply">No Reply</option><option value="notinterested">Not Interested</option>
+          </select>
+        </div>
+      </div>
+      <div class="set-field" style="margin:0 0 10px"><label>Subject / Notes</label>
+        <input type="text" id="alf-subject" placeholder="Email subject or call notes..." style="background:var(--off);border:1.5px solid var(--gl);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--tp);outline:none;width:100%">
+      </div>
+      <div class="set-field" style="margin:0 0 12px"><label>Email body / Details (optional)</label>
+        <textarea id="alf-body" rows="4" placeholder="Paste email content, call notes, or any detail you want to track..." style="background:var(--off);border:1.5px solid var(--gl);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--tp);outline:none;width:100%;resize:vertical;line-height:1.5;font-family:inherit"></textarea>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button type="button" onclick="saveActivityEntry()" style="background:var(--navy);color:#fff;border:none;border-radius:7px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer">Save Entry</button>
+        <button type="button" onclick="closeLogActivityForm()" style="background:none;border:1.5px solid var(--gl);border-radius:7px;padding:8px 14px;font-size:12px;cursor:pointer;color:var(--ts)">Cancel</button>
+      </div>
+    </div>
+    <!-- Timeline -->
+    <div id="actLogTimeline" style="max-height:60vh;overflow-y:auto;padding:0 24px 20px"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <script>
 const STAGES=["Cold","Contacted","Responded","Meeting Set","Active Opp","Closed"];
@@ -877,6 +1014,7 @@ function showPage(id,btn){
   if(id==="dashboard"){renderDashboard();renderDashboardTouchWidget();renderHotLeads()}
   if(id==="touches")renderTouchPage();
   if(id==="news")renderNewsPage();
+  if(id==="followups")renderFollowupsPage();
 }
 function renderAll(){renderDashboard();renderCORs();renderPipeMini();renderDashboardTouchWidget();renderHotLeads()}
 
@@ -893,7 +1031,40 @@ function renderDashboard(){
     {label:"Meetings Set",val:meetings,sub:"Active or closed",cls:"green"},
     {label:"Queued",val:emailQueue.length,sub:"Ready to send",cls:"purple"},
   ].map(s=>`<div class="scard ${s.cls}"><div class="sl">${s.label}</div><div class="sv">${s.val}</div><div class="ss">${s.sub}</div></div>`).join("");
-  renderPipeMini();renderFollowUps();
+  renderPipeMini();renderFollowUps();renderRecentOutreach();
+}
+
+function renderRecentOutreach(){
+  var el=document.getElementById("recentOutreach");if(!el)return;
+  // Gather last activity per company that has any
+  var items=COS_ALL().map(function(co){
+    var acts=getActivities(co.id);
+    if(!acts.length)return null;
+    var last=acts[0];
+    return{co:co,last:last,date:new Date(last.date)};
+  }).filter(Boolean).sort(function(a,b){return b.date-a.date}).slice(0,12);
+  if(!items.length){
+    el.innerHTML='<div style="padding:20px;text-align:center;color:var(--gm);font-size:12px">No outreach logged yet. Send an email and it will appear here automatically.</div>';
+    return;
+  }
+  var OUTS=OUTCOME_STYLES;
+  el.innerHTML=items.map(function(item){
+    var a=item.last;var co=item.co;
+    var os=OUTS[a.outcome]||OUTS.sent;
+    var tc=TYPE_COLORS[a.type]||"#546e7a";
+    var rel=formatRelTime(a.date);
+    return '<div style="display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--gl);cursor:pointer" onclick="openActivityLog('+co.id+')">'
+      +'<div style="flex:1;min-width:0">'
+        +'<div style="font-size:13px;font-weight:600;color:var(--navy)">'+co.name+'</div>'
+        +'<div style="font-size:11px;color:var(--ts);margin-top:1px">'+(a.contact?a.contact+' · ':"")+(a.subject||"")+'</div>'
+      +'</div>'
+      +'<div style="display:flex;align-items:center;gap:7px;flex-shrink:0">'
+        +'<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:'+tc+'18;color:'+tc+'">'+a.type+'</span>'
+        +'<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:'+os.bg+';color:'+os.color+'">'+os.label+'</span>'
+        +'<span style="font-size:11px;color:var(--gm);white-space:nowrap">'+rel+'</span>'
+      +'</div>'
+    +'</div>';
+  }).join("");
 }
 function renderPipeMini(){const pd=getPipelineData();const counts={};STAGES.forEach(s=>counts[s]=0);Object.values(pd).forEach(s=>{if(counts[s]!==undefined)counts[s]++});document.getElementById("pipeMini").innerHTML=STAGES.map(s=>`<div class="pm-stage"><div class="pm-count">${counts[s]||0}</div><div class="pm-name">${s}</div></div>`).join("")}
 function renderFollowUps(){
@@ -928,6 +1099,7 @@ function renderCORs(){
           <div class="cr-cat ${catClass(c.cat)}">${c.cat}</div>
           <div class="cr-locs">${c.locs||0}+ locs</div>
           <div class="cr-stage ${stageClass(stage)}">${stage}</div>
+          ${(function(){var lt=getLastTouched(c.id);return lt?'<span style="font-size:10px;color:var(--gm);white-space:nowrap">Last: '+formatRelTime(lt)+'</span>':'<span style="font-size:10px;color:var(--gm)">Not contacted</span>';})()}
           <button type="button" onclick="event.stopPropagation();openCORViewer(${c.id})" style="font-size:10px;padding:3px 9px;border-radius:5px;border:1px solid var(--gl);background:#fff;color:var(--ts);cursor:pointer;white-space:nowrap;flex-shrink:0">View COR</button>
           <div class="cr-expand">${isOpen?"\u25b2":"\u25bc"}</div>
         </div>
@@ -1038,11 +1210,12 @@ function renderCORBody(c,stage){
       <div style="display:flex;gap:7px;flex-wrap:wrap">
         <button type="button" class="act-btn" onclick="copyEmail(${c.id})">&#128203; Copy</button>
         <button type="button" class="act-btn outlook" onclick="openOutlook(${c.id})">&#128232; Outlook</button>
+        <button type="button" class="act-btn" onclick="openActivityLog(${c.id})" style="border-color:#6a1b9a;color:#6a1b9a" id="actBtn-${c.id}">&#128200; History${getActivities(c.id).length>0?" ("+getActivities(c.id).length+")":""}</button>
         <button type="button" class="act-btn log" onclick="copyLogEntry(${c.id})">&#128202; Log Entry</button>
         <button type="button" class="act-btn" onclick="openTemplates(${c.id})" style="border-color:#6a1b9a;color:#6a1b9a">&#128196; Templates</button>
         <button type="button" class="act-btn" onclick="openCallPrep(${c.id})" style="border-color:#2e7d32;color:#2e7d32">&#128222; Call Prep</button>
       </div>
-      <button type="button" class="act-btn primary" onclick="addToQueue(${c.id})">+ Queue</button>
+      <button type="button" class="act-btn primary" onclick="openLogTouch(${c.id})" style="background:var(--navy);border-color:var(--navy);color:#fff">&#128203; Log Touch</button>
     </div>
   </div>`;
 }
@@ -1061,7 +1234,16 @@ function setEmailFormat(fmt){emailFormat=fmt;["email","linkedin","call"].forEach
 
 let _preGenCorId=null,_preGenTone="casual",_preGenHuman=2,_preGenLength="short",_preGenCustomInstr="";
 const HUMAN_LABELS={1:"Very human — short sentences, no em-dashes, no AI-isms",2:"Balanced — natural and professional",3:"Polished — clean and structured"};
-function openPreGen(corId){_preGenCorId=corId;_preGenTone="casual";_preGenHuman=2;_preGenLength="short";document.querySelectorAll("#preGenToneRow .tone-chip").forEach((el,i)=>el.classList.toggle("on",i===0));document.querySelectorAll("#preGenLengthRow .tone-chip").forEach((el,i)=>el.classList.toggle("on",i===0));document.getElementById("preGenHumanSlider").value=2;document.getElementById("humanLabel").textContent=HUMAN_LABELS[2];var _ta=document.getElementById("preGenCustomInstr");if(_ta)_ta.value="";document.getElementById("preGenOverlay").style.display="flex"}
+function openPreGen(corId){
+  _preGenCorId=corId;_preGenTone="conversational";_preGenHuman=2;_preGenLength="medium";
+  // Default: Conversational tone (index 1), Balanced human (2), Medium length (index 1)
+  document.querySelectorAll("#preGenToneRow .tone-chip").forEach(function(el,i){el.classList.toggle("on",i===1);});
+  document.querySelectorAll("#preGenLengthRow .tone-chip").forEach(function(el,i){el.classList.toggle("on",i===1);});
+  document.getElementById("preGenHumanSlider").value=2;
+  document.getElementById("humanLabel").textContent=HUMAN_LABELS[2];
+  var _ta=document.getElementById("preGenCustomInstr");if(_ta)_ta.value="";
+  document.getElementById("preGenOverlay").style.display="flex";
+}
 function closePreGen(){document.getElementById("preGenOverlay").style.display="none"}
 function selectPreGenTone(el,tone){_preGenTone=tone;document.querySelectorAll("#preGenToneRow .tone-chip").forEach(b=>b.classList.remove("on"));el.classList.add("on")}
 function selectPreGenLength(el,len){_preGenLength=len;document.querySelectorAll("#preGenLengthRow .tone-chip").forEach(b=>b.classList.remove("on"));el.classList.add("on")}
@@ -1483,6 +1665,491 @@ async function refreshProfilesFromCloud(){
   try{const cfg=JSON.parse(fbCfg);const{initializeApp,getApps}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");const{getFirestore,doc,getDoc}=await importFS();const existing=getApps().find(a=>a.options.projectId===cfg.projectId);const app=existing||initializeApp(cfg,cfg.projectId);const db=getFirestore(app);const pd=await getDoc(doc(db,"bd_data","_profiles"));if(pd.exists()){const cp=JSON.parse(pd.data().value||"[]");if(cp.length){saveProfiles(cp);renderProfileScreen();showToast("Profiles updated!")}}else showToast("No cloud profiles yet.")}catch(e){showToast("Refresh failed: "+e.message)}
   if(btn){btn.textContent="\u21bb Refresh Profiles";btn.disabled=false}
 }
+
+// ════════════════════════════════════════════════════════════════
+// ACTIVITY LOG — per-company outreach history
+// ════════════════════════════════════════════════════════════════
+var _actLogCorId=null;
+
+function getActivities(corId){
+  try{return JSON.parse(localStorage.getItem(pKey("activities_"+corId)))||[];}
+  catch(e){return[];}
+}
+function saveActivities(corId,arr){
+  localStorage.setItem(pKey("activities_"+corId),JSON.stringify(arr));
+  if(_syncEnabled&&_db){
+    clearTimeout(_syncDebounceTimers["activities_"+corId]);
+    _syncDebounceTimers["activities_"+corId]=setTimeout(()=>syncKeyToCloud("activities_"+corId,arr),800);
+  }
+}
+function addActivity(corId,activity){
+  var arr=getActivities(corId);
+  arr.unshift(activity);
+  saveActivities(corId,arr);
+}
+
+function getLastTouched(corId){
+  var arr=getActivities(corId);
+  if(!arr.length)return null;
+  return arr[0].date;
+}
+
+function formatRelTime(isoDate){
+  if(!isoDate)return"";
+  var d=new Date(isoDate);if(isNaN(d))return"";
+  var diff=Math.floor((Date.now()-d)/86400000);
+  if(diff===0)return"Today";if(diff===1)return"Yesterday";
+  if(diff<7)return diff+"d ago";if(diff<30)return Math.floor(diff/7)+"w ago";
+  if(diff<365)return Math.floor(diff/30)+"mo ago";
+  return Math.floor(diff/365)+"yr ago";
+}
+
+var OUTCOME_STYLES={
+  sent:   {label:"Sent",        bg:"rgba(21,101,192,.1)",  color:"#1565c0"},
+  responded:{label:"Responded", bg:"rgba(46,125,50,.12)",  color:"#2e7d32"},
+  meeting:{label:"Meeting Set", bg:"rgba(200,151,43,.15)", color:"var(--gold3)"},
+  noreply:{label:"No Reply",    bg:"rgba(84,110,122,.12)", color:"#546e7a"},
+  voicemail:{label:"Voicemail", bg:"rgba(245,124,0,.1)",   color:"#e65100"},
+  notinterested:{label:"Not Interested",bg:"rgba(198,40,40,.1)",color:"#c62828"}
+};
+var TYPE_COLORS={Email:"#1565c0",Call:"#2e7d32",LinkedIn:"#0077b5","In-Person":"#6a1b9a",Other:"#546e7a"};
+
+function openActivityLog(corId){
+  var co=COS_ALL().find(function(x){return x.id==corId;});if(!co)return;
+  _actLogCorId=corId;
+  document.getElementById("actLogTitle").textContent=co.name+" — Outreach History";
+  var acts=getActivities(corId);
+  document.getElementById("actLogSub").textContent=acts.length+" touchpoint"+(acts.length===1?"":"s")+" logged";
+  closeLogActivityForm();
+  renderActivityTimeline(corId);
+  document.getElementById("activityOverlay").style.display="flex";
+}
+function closeActivityLog(){
+  document.getElementById("activityOverlay").style.display="none";
+  _actLogCorId=null;
+}
+
+function renderActivityTimeline(corId){
+  var el=document.getElementById("actLogTimeline");if(!el)return;
+  var acts=getActivities(corId);
+  if(!acts.length){
+    el.innerHTML='<div style="padding:30px;text-align:center;color:var(--gm);font-size:13px">No activity logged yet for this company.<br><span style="font-size:12px">Click <strong>+ Log Activity</strong> to add your first touchpoint, or generate and send an email — it will be auto-logged.</span></div>';
+    return;
+  }
+  el.innerHTML=acts.map(function(a,i){
+    var os=OUTCOME_STYLES[a.outcome]||OUTCOME_STYLES.sent;
+    var tc=TYPE_COLORS[a.type]||"#546e7a";
+    var dateStr=a.date?new Date(a.date).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"";
+    var relStr=formatRelTime(a.date);
+    var bodyId="actbody-"+a.id;
+    var bodyHtml=a.body?('<div id="'+bodyId+'" style="display:none;margin-top:10px;padding:12px;background:var(--off);border-radius:7px;font-size:12px;line-height:1.65;color:var(--tp);white-space:pre-wrap;max-height:200px;overflow-y:auto">'+a.body+'</div><button type="button" onclick="toggleActBody(\''+bodyId+'\')" style="background:none;border:none;font-size:10px;color:var(--gold3);cursor:pointer;text-decoration:underline;margin-top:5px;padding:0">Show content</button>'):"";
+    return '<div style="padding:16px 0;border-bottom:1px solid var(--gl)'+( i===acts.length-1?";border-bottom:none":"")+'">'
+      +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">'
+        +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+          +'<span style="font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;background:'+tc+'18;color:'+tc+'">'+a.type+'</span>'
+          +(a.contact?'<span style="font-size:12px;font-weight:600;color:var(--navy)">'+a.contact+'</span>'+(a.contactRole?'<span style="font-size:11px;color:var(--ts)">'+a.contactRole+'</span>':""):"")
+        +'</div>'
+        +'<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">'
+          +'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:'+os.bg+';color:'+os.color+'">'+os.label+'</span>'
+          +'<select onchange="updateActOutcome(\''+corId+'\','+a.id+',this.value)" style="font-size:10px;border:1px solid var(--gl);border-radius:5px;padding:2px 4px;background:#fff;color:var(--ts);cursor:pointer">'
+            +Object.entries(OUTCOME_STYLES).map(function(e){return'<option value="'+e[0]+'"'+(a.outcome===e[0]?" selected":"")+">"+e[1].label+"</option>";}).join("")
+          +"</select>"
+          +'<button type="button" onclick="deleteActivity(\''+corId+'\','+a.id+')" style="background:none;border:none;color:var(--gm);cursor:pointer;font-size:14px;padding:0 2px" title="Delete">&#128465;</button>'
+        +'</div>'
+      +'</div>'
+      +(a.subject?'<div style="font-size:13px;font-weight:600;color:var(--navy);margin-top:6px">'+a.subject+'</div>':"")
+      +bodyHtml
+      +'<div style="font-size:10px;color:var(--gm);margin-top:6px">'+dateStr+(relStr?" \u00b7 "+relStr:"")+'</div>'
+    +"</div>";
+  }).join("");
+
+  // Update subtitle
+  var sub=document.getElementById("actLogSub");
+  if(sub)sub.textContent=acts.length+" touchpoint"+(acts.length===1?"":"s")+" logged";
+}
+
+function toggleActBody(id){
+  var el=document.getElementById(id);if(!el)return;
+  var btn=el.nextElementSibling;
+  var open=el.style.display!=="none";
+  el.style.display=open?"none":"block";
+  if(btn)btn.textContent=open?"Show content":"Hide content";
+}
+
+function updateActOutcome(corId,actId,outcome){
+  var arr=getActivities(corId);
+  var act=arr.find(function(a){return a.id==actId;});
+  if(act){act.outcome=outcome;saveActivities(corId,arr);renderActivityTimeline(corId);}
+}
+
+function deleteActivity(corId,actId){
+  if(!confirm("Delete this activity entry?"))return;
+  var arr=getActivities(corId).filter(function(a){return a.id!=actId;});
+  saveActivities(corId,arr);renderActivityTimeline(corId);
+  showToast("Entry deleted");
+}
+
+function openLogActivityForm(){
+  var el=document.getElementById("actLogForm");if(!el)return;
+  el.style.display="block";
+  // Pre-fill date to today
+  var todayStr=new Date().toISOString().split("T")[0];
+  var dateInput=document.getElementById("alf-date");if(dateInput)dateInput.value=todayStr;
+  // Pre-fill contact if one is selected
+  if(_actLogCorId){
+    var co=COS_ALL().find(function(x){return x.id==_actLogCorId;});
+    if(co){
+      var sel=pGet("selContacts_"+_actLogCorId)||[];
+      var ct=(co.contacts||[]).find(function(x){return sel.includes(x.email||x.name);});
+      if(ct){
+        var ci=document.getElementById("alf-contact");if(ci)ci.value=ct.name;
+      }
+    }
+  }
+  ["alf-subject","alf-body"].forEach(function(id){var el=document.getElementById(id);if(el)el.value="";});
+  document.getElementById("alf-type").value="Email";
+  document.getElementById("alf-outcome").value="sent";
+}
+function closeLogActivityForm(){
+  var el=document.getElementById("actLogForm");if(el)el.style.display="none";
+}
+
+function saveActivityEntry(){
+  if(!_actLogCorId){showToast("No company selected");return;}
+  var type=document.getElementById("alf-type").value;
+  var date=document.getElementById("alf-date").value||new Date().toISOString();
+  var contact=(document.getElementById("alf-contact").value||"").trim();
+  var outcome=document.getElementById("alf-outcome").value;
+  var subject=(document.getElementById("alf-subject").value||"").trim();
+  var body=(document.getElementById("alf-body").value||"").trim();
+  if(!subject&&!body&&!contact){showToast("Add at least a subject or contact name");return;}
+  addActivity(_actLogCorId,{
+    id:Date.now(),date:date?new Date(date).toISOString():new Date().toISOString(),
+    type:type,contact:contact,outcome:outcome,subject:subject,body:body
+  });
+  closeLogActivityForm();
+  renderActivityTimeline(_actLogCorId);
+  renderCORs();
+  showToast("Activity logged!");
+}
+
+// Auto-log when opening Outlook
+function autoLogEmail(corId,subject,body,contactName,contactRole){
+  addActivity(corId,{
+    id:Date.now(),
+    date:new Date().toISOString(),
+    type:"Email",
+    contact:contactName||"",
+    contactRole:contactRole||"",
+    outcome:"sent",
+    subject:subject||"(no subject)",
+    body:body||""
+  });
+  renderCORs();
+}
+
+
+// ════════════════════════════════════════════════════════════════
+// LOG TOUCH (COR-specific) + FOLLOW-UPS PAGE
+// ════════════════════════════════════════════════════════════════
+var _ltcCorId=null;
+
+function openLogTouch(corId){
+  var co=COS_ALL().find(function(x){return x.id==corId;});if(!co)return;
+  _ltcCorId=corId;
+  // Pre-fill company name
+  document.getElementById("ltcCorName").textContent=co.name+" \u00b7 "+co.cat;
+  // Pre-fill contact from selection
+  var sel=pGet("selContacts_"+corId)||[];
+  var ct=(co.contacts||[]).find(function(x){return sel.includes(x.email||x.name);})||(co.contacts||[])[0]||{};
+  document.getElementById("ltc-contact").value=ct.name||"";
+  // Pre-fill subject from current draft
+  var subj=pGet("draft_subj_"+corId)||"";
+  document.getElementById("ltc-subject").value=subj;
+  // Default outcome: sent, type: Email
+  document.getElementById("ltc-type").value="Email";
+  document.getElementById("ltc-outcome").value="sent";
+  // Default follow-up: +7 days
+  setLTCFollowup(7);
+  document.getElementById("logTouchCOROverlay").style.display="flex";
+}
+
+function setLTCFollowup(days){
+  var d=new Date();d.setDate(d.getDate()+days);
+  var str=d.toISOString().split("T")[0];
+  document.getElementById("ltc-followup").value=str;
+}
+
+function saveLogTouchCOR(){
+  if(!_ltcCorId)return;
+  var type=document.getElementById("ltc-type").value;
+  var outcome=document.getElementById("ltc-outcome").value;
+  var contact=(document.getElementById("ltc-contact").value||"").trim();
+  var subject=(document.getElementById("ltc-subject").value||"").trim();
+  var followupDate=document.getElementById("ltc-followup").value;
+
+  // Log the activity
+  var co=COS_ALL().find(function(x){return x.id==_ltcCorId;});
+  var ct=(co&&co.contacts||[]).find(function(x){return x.name===contact;})||{};
+  addActivity(_ltcCorId,{
+    id:Date.now(),
+    date:new Date().toISOString(),
+    type:type,
+    contact:contact,
+    contactRole:ct.role||"",
+    outcome:outcome,
+    subject:subject||"(no subject)",
+    body:pGet("draft_bodies_"+_ltcCorId)?.[pGet("seqtab_"+_ltcCorId)||0]||""
+  });
+
+  // Set follow-up date
+  if(followupDate){
+    var fus=pGet("followups")||{};
+    fus[_ltcCorId]=fus[_ltcCorId]||{};
+    fus[_ltcCorId].date=followupDate;
+    fus[_ltcCorId].contact=contact;
+    fus[_ltcCorId].lastSubject=subject;
+    pSet("followups",fus);
+  }
+
+  // Move to Contacted if still Cold
+  var pd=getPipelineData();
+  if((pd[_ltcCorId]||"Cold")==="Cold"){setStageCOR(_ltcCorId,"Contacted");}
+
+  document.getElementById("logTouchCOROverlay").style.display="none";
+  renderCORs();renderDashboard();
+  showToast("Logged \u2714 Follow-up set for "+new Date(followupDate).toLocaleDateString("en-US",{month:"short",day:"numeric"}));
+}
+
+// ─── FOLLOW-UPS PAGE ────────────────────────────────────────────
+function renderFollowupsPage(){
+  var fus=pGet("followups")||{};
+  var today=new Date();today.setHours(0,0,0,0);
+  var weekEnd=new Date(today);weekEnd.setDate(weekEnd.getDate()+7);
+  var twoWeekEnd=new Date(today);twoWeekEnd.setDate(twoWeekEnd.getDate()+14);
+
+  // Build items with last-touch context
+  var items=Object.entries(fus).map(function(entry){
+    var corId=entry[0];var data=entry[1];
+    if(!data.date)return null;
+    var co=COS_ALL().find(function(x){return x.id==corId;});if(!co)return null;
+    var d=new Date(data.date);d.setHours(0,0,0,0);
+    var diff=Math.round((d-today)/86400000);
+    var acts=getActivities(corId);
+    var lastAct=acts[0]||null;
+    return{corId:corId,co:co,data:data,d:d,diff:diff,lastAct:lastAct};
+  }).filter(Boolean);
+
+  // Sort within groups by date
+  var overdue=items.filter(function(x){return x.diff<0;}).sort(function(a,b){return a.diff-b.diff;});
+  var todayItems=items.filter(function(x){return x.diff===0;});
+  var thisWeek=items.filter(function(x){return x.diff>0&&x.d<weekEnd;}).sort(function(a,b){return a.diff-b.diff;});
+  var later=items.filter(function(x){return x.d>=weekEnd;}).sort(function(a,b){return a.diff-b.diff;});
+  var noDate=COS_ALL().filter(function(co){
+    var pd=getPipelineData();var st=pd[co.id]||"Cold";
+    return st!=="Cold"&&st!=="Closed"&&!fus[co.id]?.date;
+  }).slice(0,8);
+
+  // Stats row
+  var statsEl=document.getElementById("fuStats");
+  if(statsEl){
+    statsEl.innerHTML=[
+      {label:"Overdue",val:overdue.length,c:"#c62828",bg:"rgba(198,40,40,.08)"},
+      {label:"Due Today",val:todayItems.length,c:"#f57c00",bg:"rgba(245,124,0,.08)"},
+      {label:"This Week",val:thisWeek.length,c:"var(--navy)",bg:"rgba(0,40,85,.05)"},
+      {label:"Scheduled Total",val:items.length,c:"var(--ts)",bg:"rgba(84,110,122,.06)"},
+    ].map(function(s){return'<div style="background:#fff;border-radius:10px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06);border-top:3px solid '+s.c+'"><div style="font-size:11px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">'+s.label+'</div><div style="font-size:28px;font-weight:800;color:'+s.c+'">'+s.val+'</div></div>';}).join("");
+  }
+
+  // Badge counts in header
+  var ov=document.getElementById("fuOverdueCount");if(ov)ov.textContent=overdue.length?overdue.length+" overdue":"";
+  var td=document.getElementById("fuTodayCount");if(td)td.textContent=todayItems.length?" \u00b7 "+todayItems.length+" today":"";
+
+  function renderFUCard(item){
+    var co=item.co;var data=item.data;var diff=item.diff;var lastAct=item.lastAct;
+    var urgencyColor=diff<0?"#c62828":diff===0?"#f57c00":diff<=3?"#e65100":"var(--navy)";
+    var dateLabel=diff<0?Math.abs(diff)+"d overdue":diff===0?"Due today":diff===1?"Tomorrow":diff+"d away";
+    var lastTouchStr="";
+    if(lastAct){
+      var tc=TYPE_COLORS[lastAct.type]||"#546e7a";
+      lastTouchStr='<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;background:'+tc+'18;color:'+tc+'">'+lastAct.type+'</span> '
+        +'<span style="font-size:11px;color:var(--ts)">'+formatRelTime(lastAct.date)+(lastAct.subject?' \u00b7 "'+lastAct.subject.slice(0,40)+(lastAct.subject.length>40?"...":"")+'"':"")+'</span>';
+    } else {
+      lastTouchStr='<span style="font-size:11px;color:var(--gm)">No outreach logged yet</span>';
+    }
+    var stage=getPipelineData()[co.id]||"Cold";
+    var si=STAGES.indexOf(stage);var sc=si>=0?SC[si]:SC[0];
+    return '<div style="background:#fff;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.05);padding:14px 18px;margin-bottom:10px;border-left:3px solid '+urgencyColor+'">'
+      +'<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
+        +'<div style="flex:1;min-width:0">'
+          +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">'
+            +'<span style="font-size:14px;font-weight:700;color:var(--navy)">'+co.name+'</span>'
+            +'<span class="cr-stage '+sc+'" style="font-size:10px">'+stage+'</span>'
+          +'</div>'
+          +(data.contact?'<div style="font-size:12px;color:var(--ts);margin-bottom:3px">'+data.contact+'</div>':"")
+          +'<div style="display:flex;align-items:center;gap:6px">'+lastTouchStr+'</div>'
+        +'</div>'
+        +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">'
+          +'<span style="font-size:12px;font-weight:700;color:'+urgencyColor+'">'+dateLabel+'</span>'
+          +'<span style="font-size:10px;color:var(--gm)">'+data.d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})+'</span>'
+          +'<div style="display:flex;gap:6px">'
+            +'<button type="button" onclick="goToEmailEngine('+co.id+')" style="background:var(--navy);border:none;color:#fff;border-radius:6px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer">Reach Out &#9654;</button>'
+            +'<button type="button" onclick="openLogTouch('+co.id+')" style="background:rgba(200,151,43,.1);border:1px solid var(--gold);color:var(--gold3);border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer">Log &#128203;</button>'
+            +'<button type="button" onclick="snoozeFollowup('+co.id+')" style="background:none;border:1px solid var(--gl);color:var(--gm);border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer">Snooze</button>'
+          +'</div>'
+        +'</div>'
+      +'</div>'
+    +'</div>';
+  }
+
+  function renderSection(elId,title,items,color){
+    var el=document.getElementById(elId);if(!el)return;
+    if(!items.length){el.innerHTML="";return;}
+    el.innerHTML='<div style="font-size:11px;font-weight:700;color:'+color+';text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid '+color+'22">'+title+' ('+items.length+')</div>'
+      +items.map(renderFUCard).join("");
+  }
+
+  // Reset to date tab on first render if no tab set
+  if(!_fuTab) _fuTab = "date";
+  switchFUTab(_fuTab);
+  renderSection("fuOverdueSection","&#128308; Overdue",overdue,"#c62828");
+  renderSection("fuTodaySection","&#128992; Due Today",todayItems,"#f57c00");
+  renderSection("fuWeekSection","&#128309; This Week",thisWeek,"#1565c0");
+  renderSection("fuLaterSection","&#128994; Upcoming",later,"#546e7a");
+
+  // No-date section (active companies with no follow-up set)
+  var ndEl=document.getElementById("fuNoDateSection");
+  if(ndEl){
+    if(!noDate.length){ndEl.innerHTML="";return;}
+    ndEl.innerHTML='<div style="font-size:11px;font-weight:700;color:var(--gm);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;margin-top:6px;padding-bottom:6px;border-bottom:2px solid var(--gl)">No Follow-Up Scheduled (active companies)</div>'
+      +noDate.map(function(co){
+        var stage=getPipelineData()[co.id]||"Cold";var si=STAGES.indexOf(stage);var sc=si>=0?SC[si]:SC[0];
+        var lastAct=getActivities(co.id)[0];
+        return '<div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.05);padding:12px 18px;margin-bottom:8px;display:flex;align-items:center;gap:12px;opacity:.8">'
+          +'<div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--navy)">'+co.name+'</div>'
+          +(lastAct?'<div style="font-size:11px;color:var(--ts)">Last: '+lastAct.type+' '+formatRelTime(lastAct.date)+'</div>':'<div style="font-size:11px;color:var(--gm)">No activity logged</div>')
+          +'</div>'
+          +'<span class="cr-stage '+sc+'" style="font-size:10px">'+stage+'</span>'
+          +'<button type="button" onclick="openLogTouch('+co.id+')" style="background:var(--navy);border:none;color:#fff;border-radius:6px;padding:5px 11px;font-size:11px;cursor:pointer">Schedule</button>'
+        +'</div>';
+      }).join("");
+  }
+}
+
+function snoozeFollowup(corId){
+  var fus=pGet("followups")||{};
+  if(!fus[corId])return;
+  var d=new Date(fus[corId].date||Date.now());
+  d.setDate(d.getDate()+7);
+  fus[corId].date=d.toISOString().split("T")[0];
+  pSet("followups",fus);
+  renderFollowupsPage();
+  showToast("Snoozed 7 days \u2014 "+d.toLocaleDateString("en-US",{month:"short",day:"numeric"}));
+}
+
+
+var _fuTab = "date";
+
+function switchFUTab(tab){
+  _fuTab = tab;
+  document.getElementById("fuDateView").style.display  = tab==="date"  ? "block" : "none";
+  document.getElementById("fuStageView").style.display = tab==="stage" ? "block" : "none";
+  var btnDate  = document.getElementById("fuTabDate");
+  var btnStage = document.getElementById("fuTabStage");
+  if(btnDate){btnDate.style.background  = tab==="date"  ? "var(--navy)" : "transparent"; btnDate.style.color  = tab==="date"  ? "#fff" : "var(--ts)";}
+  if(btnStage){btnStage.style.background = tab==="stage" ? "var(--navy)" : "transparent"; btnStage.style.color = tab==="stage" ? "#fff" : "var(--ts)";}
+  if(tab==="stage") renderFUStageView();
+}
+
+function renderFUStageView(){
+  var el = document.getElementById("fuStageContent"); if(!el) return;
+  var fus   = pGet("followups") || {};
+  var pd    = getPipelineData();
+  var today = new Date(); today.setHours(0,0,0,0);
+
+  // Active stages only (skip Cold and Closed for main sections; Cold shown separately)
+  var activeStages = ["Contacted","Responded","Meeting Set","Active Opp"];
+  var html = "";
+
+  activeStages.forEach(function(stage){
+    var cos = COS_ALL().filter(function(co){ return (pd[co.id]||"Cold") === stage; });
+    if(!cos.length) return;
+
+    // Sort: overdue first, then by follow-up date, then alpha
+    cos.sort(function(a,b){
+      var fa = fus[a.id] && fus[a.id].date ? new Date(fus[a.id].date) : null;
+      var fb = fus[b.id] && fus[b.id].date ? new Date(fus[b.id].date) : null;
+      if(fa && fb) return fa - fb;
+      if(fa) return -1; if(fb) return 1;
+      return a.name.localeCompare(b.name);
+    });
+
+    var si = STAGES.indexOf(stage);
+    var sc = si>=0 ? SC[si] : SC[0];
+    var stageColors = {
+      "Contacted":   {hdr:"#1565c0", bg:"rgba(21,101,192,.06)"},
+      "Responded":   {hdr:"#2e7d32", bg:"rgba(46,125,50,.06)"},
+      "Meeting Set": {hdr:"#c8972b", bg:"rgba(200,151,43,.07)"},
+      "Active Opp":  {hdr:"#6a1b9a", bg:"rgba(106,27,154,.06)"}
+    };
+    var sc2 = stageColors[stage] || {hdr:"var(--navy)", bg:"rgba(0,40,85,.04)"};
+
+    html += '<div style="margin-bottom:24px">';
+    html += '<div style="font-size:11px;font-weight:700;color:'+sc2.hdr+';text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:8px">'
+          + '<span class="cr-stage '+sc+'" style="font-size:10px">'+stage+'</span>'
+          + '<span>'+cos.length+' compan'+(cos.length===1?'y':'ies')+'</span></div>';
+
+    html += '<div style="display:flex;flex-direction:column;gap:8px">';
+    cos.forEach(function(co){
+      var fu     = fus[co.id] || {};
+      var lastAct= getActivities(co.id)[0] || null;
+      var hasFU  = !!fu.date;
+      var fuDate = hasFU ? new Date(fu.date) : null;
+      var diff   = fuDate ? Math.round((fuDate - today)/86400000) : null;
+      var urgColor = diff===null ? "var(--gm)" : diff<0 ? "#c62828" : diff===0 ? "#f57c00" : diff<=3 ? "#e65100" : "var(--navy)";
+      var dateLabel= diff===null ? "No date set" : diff<0 ? Math.abs(diff)+"d overdue" : diff===0 ? "Due today" : diff===1 ? "Tomorrow" : diff+"d away";
+      var lastStr  = lastAct
+        ? (lastAct.type + " \u00b7 " + formatRelTime(lastAct.date) + (lastAct.subject ? ' \u00b7 "'+lastAct.subject.slice(0,35)+(lastAct.subject.length>35?"...":"")+'"' : ""))
+        : "No outreach yet";
+
+      html += '<div style="background:#fff;border-radius:9px;padding:12px 16px;box-shadow:0 1px 5px rgba(0,0,0,.06);display:flex;align-items:center;gap:14px;flex-wrap:wrap">'
+        +'<div style="flex:1;min-width:0">'
+          +'<div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:2px">'+co.name+'</div>'
+          +(fu.contact?'<div style="font-size:11px;color:var(--ts);margin-bottom:3px">'+fu.contact+'</div>':"")
+          +'<div style="font-size:11px;color:var(--gm)">'+lastStr+'</div>'
+        +'</div>'
+        +'<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">'
+          +'<span style="font-size:12px;font-weight:700;color:'+urgColor+'">'+dateLabel+'</span>'
+          +'<button type="button" onclick="goToEmailEngine('+co.id+')" style="background:var(--navy);border:none;color:#fff;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer">Go &#9654;</button>'
+          +'<button type="button" onclick="openLogTouch('+co.id+')" style="background:none;border:1px solid var(--gl);color:var(--ts);border-radius:6px;padding:5px 9px;font-size:11px;cursor:pointer">Log</button>'
+        +'</div>'
+      +'</div>';
+    });
+    html += '</div></div>';
+  });
+
+  // Cold companies with any activity (reached out but not moved yet)
+  var coldWithActivity = COS_ALL().filter(function(co){
+    return (pd[co.id]||"Cold")==="Cold" && getActivities(co.id).length>0;
+  });
+  if(coldWithActivity.length){
+    html += '<div style="margin-bottom:24px"><div style="font-size:11px;font-weight:700;color:var(--gm);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Still Cold (has activity)</div>';
+    html += '<div style="display:flex;flex-direction:column;gap:7px">';
+    coldWithActivity.forEach(function(co){
+      var lastAct = getActivities(co.id)[0];
+      html += '<div style="background:#fff;border-radius:9px;padding:11px 16px;box-shadow:0 1px 4px rgba(0,0,0,.05);display:flex;align-items:center;gap:12px;opacity:.85">'
+        +'<div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--navy)">'+co.name+'</div>'
+        +'<div style="font-size:11px;color:var(--gm)">'+lastAct.type+' \u00b7 '+formatRelTime(lastAct.date)+'</div></div>'
+        +'<button type="button" onclick="goToEmailEngine('+co.id+')" style="background:var(--navy);border:none;color:#fff;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer">Draft &#9654;</button>'
+      +'</div>';
+    });
+    html += '</div></div>';
+  }
+
+  if(!html) html = '<div style="padding:30px;text-align:center;color:var(--gm);font-size:13px">No active pipeline yet. Start reaching out to move companies through stages.</div>';
+  el.innerHTML = html;
+}
+
 
 function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500)}
 
