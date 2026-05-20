@@ -230,6 +230,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
   <div class="ps-sub">BD Command Center</div>
   <div class="ps-who">Who's working today?</div>
   <div class="profiles-grid" id="profilesGrid"></div>
+  <button type="button" onclick="refreshProfilesFromCloud()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);border-radius:8px;padding:8px 18px;font-size:12px;cursor:pointer;margin-top:-10px" id="refreshProfilesBtn">&#8635; Refresh Profiles</button>
 </div>
 <div class="overlay" id="pinOverlay" style="display:none">
   <div class="pin-box">
@@ -956,7 +957,14 @@ function saveNewProfile(){
   if(!name){showToast("Enter a name");return}
   const profiles=getProfiles();
   profiles.push({name,title:title||"BD Associate",pin:pin.length===4?pin:"",color:newProfileColor});
-  saveProfiles(profiles);closeAddProfile();renderProfileScreen();showToast("Profile created!");
+  saveProfiles(profiles);
+  // Push profiles to Firebase so teammates see the new profile
+  if(_syncEnabled&&_db){
+    import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(({doc,setDoc})=>{
+      setDoc(doc(_db,'bd_data','_profiles'),{value:JSON.stringify(getProfiles()),updated:Date.now()},{merge:true});
+    });
+  }
+  closeAddProfile();renderProfileScreen();showToast("Profile created! Others need to refresh to see it.");
 }
 
 function enterApp(profile){
@@ -968,6 +976,8 @@ function enterApp(profile){
   document.getElementById("navName").textContent=profile.name;
   document.getElementById("navTitle").textContent=profile.title||"BD Associate";
   document.getElementById("dashSub").textContent=profile.name+" \u00b7 Mohr Partners BD Command Center";
+  // Reset all in-memory state for clean profile start
+  emailQueue=[];openCORId=null;aiHistory=[];notesCurrent=null;
   loadSettings();loadTheme();
   const fab=document.getElementById('objFab');if(fab)fab.style.display='flex';
   renderAll();
@@ -1042,7 +1052,7 @@ function stageClass(s){const i=STAGES.indexOf(s);return i>=0?SC[i]:SC[0]}
 function pcClass(s){const i=STAGES.indexOf(s);return i>=0?PC[i]:PC[0]}
 
 function renderCORs(){
-  const q=(document.getElementById("srch")||{value:""}).value.toLowerCase();
+  const q=((document.getElementById("srch")||{}).value||'').toLowerCase().trim();
   const cat=(document.getElementById("fCat")||{value:""}).value;
   const prob=(document.getElementById("fProb")||{value:""}).value;
   const pd=getPipelineData();
@@ -1978,10 +1988,10 @@ function saveNewCOR(){
 // ════════════════════════════════════════════════════════════════
 // NEWS SCREENER
 // ════════════════════════════════════════════════════════════════
-function getNewsCache(){ return pGet('newsCache')||{}; }
+function getNewsCache(){ try{return JSON.parse(localStorage.getItem('shared_newsCache'))||{}}catch(e){return{}} }
 
 function renderNewsPage(){
-  const q=(document.getElementById('newsSrch')||{}).value?.toLowerCase()||'';
+  const q=((document.getElementById('newsSrch')||{}).value||'').toLowerCase().trim();
   const cat=(document.getElementById('newsCatFilter')||{}).value||'';
   const status=(document.getElementById('newsStatusFilter')||{}).value||'';
   const cache=getNewsCache();
@@ -2068,7 +2078,8 @@ async function scanOneNews(corId, btn){
     const text=await runNewsSearch(c.name,c.cat,c.hq,c.problem||'',1200);
     const cache=getNewsCache();
     cache[corId]={text,scanned:new Date().toISOString(),company:c.name};
-    pSet('newsCache',cache);
+    localStorage.setItem('shared_newsCache',JSON.stringify(cache));
+    if(_syncEnabled&&_db)syncKeyToCloud('shared_newsCache',cache);
     if(btn){btn.disabled=false;btn.textContent='Re-scan';}
     renderNewsPage();
     showToast('News scanned for '+c.name);
@@ -2093,7 +2104,7 @@ async function scanAllNews(){
       const text=await runNewsSearch(c.name,c.cat,c.hq,c.problem||'',800);
       const cache=getNewsCache();
       cache[c.id]={text,scanned:new Date().toISOString(),company:c.name};
-      pSet('newsCache',cache);
+      localStorage.setItem('shared_newsCache',JSON.stringify(cache));
     }catch(e){}
     await new Promise(r=>setTimeout(r,500));
   }
@@ -2548,9 +2559,54 @@ function confirmGenerate(){
   generateEmail(_preGenCorId, _preGenTone, _preGenHuman, _preGenLength);
 }
 
+async function refreshProfilesFromCloud(){
+  const btn=document.getElementById('refreshProfilesBtn');
+  if(btn){btn.textContent='Refreshing...';btn.disabled=true;}
+  const fbCfg=localStorage.getItem('fbConfig');
+  if(!fbCfg){
+    if(btn){btn.textContent='&#8635; Refresh Profiles';btn.disabled=false;}
+    showToast('Connect Firebase in Settings to sync profiles');return;
+  }
+  try{
+    const cfg=JSON.parse(fbCfg);
+    const {initializeApp,getApps}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+    const {getFirestore,doc,getDoc}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const existing=getApps().find(a=>a.options.projectId===cfg.projectId);
+    const app=existing||initializeApp(cfg,cfg.projectId);
+    const db=getFirestore(app);
+    const profilesDoc=await getDoc(doc(db,'bd_data','_profiles'));
+    if(profilesDoc.exists()){
+      const cloudProfiles=JSON.parse(profilesDoc.data().value||'[]');
+      if(cloudProfiles.length){saveProfiles(cloudProfiles);renderProfileScreen();showToast('Profiles updated!');}
+      else showToast('No profiles found in cloud yet.');
+    } else showToast('No cloud profiles yet.');
+  }catch(e){ showToast('Refresh failed: '+e.message); }
+  if(btn){btn.textContent='&#8635; Refresh Profiles';btn.disabled=false;}
+}
+
 function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500)}
 
-window.addEventListener("DOMContentLoaded",()=>{
+window.addEventListener("DOMContentLoaded",async ()=>{
+  // Try to pull latest profiles from Firebase before showing profile screen
+  const fbCfg=localStorage.getItem('fbConfig');
+  if(fbCfg){
+    try{
+      const cfg=JSON.parse(fbCfg);
+      const {initializeApp,getApps}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+      const {getFirestore,doc,getDoc}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const existing=getApps().find(a=>a.options.projectId===cfg.projectId);
+      const app=existing||initializeApp(cfg,cfg.projectId);
+      const db=getFirestore(app);
+      const profilesDoc=await getDoc(doc(db,'bd_data','_profiles'));
+      if(profilesDoc.exists()){
+        const cloudProfiles=JSON.parse(profilesDoc.data().value||'[]');
+        if(cloudProfiles.length) saveProfiles(cloudProfiles);
+      }
+      // Also pull shared news cache
+      const newsDoc=await getDoc(doc(db,'bd_data','_sharedNews'));
+      if(newsDoc.exists()) localStorage.setItem('shared_newsCache',newsDoc.data().value||'{}');
+    }catch(e){ console.warn('Pre-load Firebase pull failed:',e); }
+  }
   if(!getProfiles().length){saveProfiles([{name:"Trey Nemeth",title:"BD Associate",pin:"",color:0}])}
   renderProfileScreen();
 });
