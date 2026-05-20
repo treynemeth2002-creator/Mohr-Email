@@ -230,7 +230,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
   <div class="ps-sub">BD Command Center</div>
   <div class="ps-who">Who's working today?</div>
   <div class="profiles-grid" id="profilesGrid"></div>
-  <button type="button" onclick="refreshProfilesFromCloud()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);border-radius:8px;padding:8px 18px;font-size:12px;cursor:pointer;margin-top:-10px" id="refreshProfilesBtn">&#8635; Refresh Profiles</button>
+  <button type="button" onclick="refreshProfilesFromCloud()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);border-radius:8px;padding:8px 18px;font-size:12px;cursor:pointer;margin-top:-10px" id="refreshProfilesBtn">↻ Refresh Profiles</button>
 </div>
 <div class="overlay" id="pinOverlay" style="display:none">
   <div class="pin-box">
@@ -1063,9 +1063,9 @@ function renderCORs(){
     return ms&&mc&&mp;
   });
   document.getElementById("fCount").textContent=filtered.length+" companies";
-  document.getElementById("corListEl").innerHTML=filtered.map(c=>{
+  let _corHtml=""; filtered.forEach(c=>{ try{
     const stage=pd[c.id]||"Cold";const isOpen=openCORId===c.id;
-    return`<div class="cor-row${isOpen?" active":""}" id="cor-${c.id}">
+    _corHtml+=`<div class="cor-row${isOpen?" active":""}" id="cor-${c.id}">
       <div class="cr-top" onclick="toggleCOR(${c.id})">
         <div class="cr-num">#${c.id}</div>
         <div class="cr-name">${c.name}</div>
@@ -1077,7 +1077,11 @@ function renderCORs(){
       </div>
       <div class="cr-body${isOpen?" open":""}" id="crb-${c.id}">${isOpen?renderCORBody(c,stage):""}</div>
     </div>`;
-  }).join("");
+  }catch(e){console.error("COR row error",c?.name,e);}
+  _corHtml+=arguments[0];
+}).apply(null,[(function(){}catch(_e){console.error("COR error",_e);}
+});
+document.getElementById("corListEl").innerHTML=_corHtml;
 }
 
 function renderCORBody(c,stage){
@@ -1991,38 +1995,55 @@ function saveNewCOR(){
 function getNewsCache(){ try{return JSON.parse(localStorage.getItem('shared_newsCache'))||{}}catch(e){return{}} }
 
 function renderNewsPage(){
-  const q=((document.getElementById('newsSrch')||{}).value||'').toLowerCase().trim();
-  const cat=(document.getElementById('newsCatFilter')||{}).value||'';
-  const status=(document.getElementById('newsStatusFilter')||{}).value||'';
-  const cache=getNewsCache();
-  const all=COS_ALL().filter(c=>{
-    const mq=!q||c.name.toLowerCase().includes(q);
-    const mc=!cat||c.cat===cat;
-    const ms=!status||(status==='scanned'&&cache[c.id])||(status==='unscanned'&&!cache[c.id]);
-    return mq&&mc&&ms;
-  });
-  const nc=document.getElementById('newsCount');
-  if(nc)nc.textContent=all.length+' companies';
-  const grid=document.getElementById('newsGrid');
-  if(!grid)return;
-  grid.innerHTML=all.map(c=>{
-    const n=cache[c.id];
-    const scanned=n?.scanned?new Date(n.scanned).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'';
-    const ci=STAGES.indexOf(getPipelineData()[c.id]||'Cold');
-    const sc=ci>=0?SCL[ci]:SCL[0];
-    return`<div style="background:#fff;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.05);overflow:hidden">
-      <div style="display:flex;align-items:center;gap:12px;padding:13px 18px;cursor:pointer;border-bottom:${n?'1px solid var(--gl)':'none'}" onclick="toggleNewsRow(${c.id})">
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:700;color:var(--navy)">${c.name}</div>
-          <div style="font-size:11px;color:var(--ts)">${c.cat} · ${c.hq||''}${scanned?' · Scanned '+scanned:''}</div>
-        </div>
-        <div class="cr-stage ${sc}" style="font-size:10px">${getPipelineData()[c.id]||'Cold'}</div>
-        ${n?'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#dcfce7;color:#166534">&#10003; Scanned</span>':'<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:var(--off);color:var(--gm)">Not scanned</span>'}
-        <button type="button" onclick="event.stopPropagation();scanOneNews(${c.id},this)" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid var(--gold);background:rgba(200,151,43,.08);color:var(--gold3);cursor:pointer;font-weight:600;white-space:nowrap">${n?'Re-scan':'Scan'}</button>
-      </div>
-      ${n?`<div id="nr-${c.id}" style="padding:14px 18px;font-size:12px;line-height:1.65;color:var(--tp)">${formatNewsText(n.text)}</div>`:`<div id="nr-${c.id}" style="display:none"></div>`}
-    </div>`;
-  }).join('');
+  try{
+    const q=((document.getElementById('newsSrch')||{}).value||'').toLowerCase().trim();
+    const cat=(document.getElementById('newsCatFilter')||{}).value||'';
+    const status=(document.getElementById('newsStatusFilter')||{}).value||'';
+    const cache=getNewsCache();
+    const stageClasses=["s-cold","s-contacted","s-responded","s-meeting","s-active","s-closed"];
+    const allCos=COS_ALL();
+    const all=allCos.filter(function(c){
+      const mq=!q||c.name.toLowerCase().includes(q);
+      const mc=!cat||c.cat===cat;
+      const ms=!status||(status==='scanned'&&cache[c.id])||(status==='unscanned'&&!cache[c.id]);
+      return mq&&mc&&ms;
+    });
+    const nc=document.getElementById('newsCount');
+    if(nc)nc.textContent=all.length+' companies';
+    const grid=document.getElementById('newsGrid');
+    if(!grid)return;
+    if(!all.length){grid.innerHTML='<div style="padding:30px;text-align:center;color:var(--gm);font-size:13px">No companies match your filter.</div>';return;}
+    const pd=getPipelineData();
+    let html='';
+    for(let i=0;i<all.length;i++){
+      const c=all[i];
+      const n=cache[c.id]||null;
+      const stage=pd[c.id]||'Cold';
+      const ci=STAGES.indexOf(stage);
+      const sc=ci>=0?stageClasses[ci]:stageClasses[0];
+      const scannedTxt=n&&n.scanned?(' · Scanned '+new Date(n.scanned).toLocaleDateString('en-US',{month:'short',day:'numeric'})):'';
+      const newsBody=n?('<div id="nr-'+c.id+'" style="padding:14px 18px;font-size:12px;line-height:1.65;color:var(--tp)">'+formatNewsText(n.text)+'</div>')
+                      :('<div id="nr-'+c.id+'" style="display:none"></div>');
+      html+='<div style="background:#fff;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.05);overflow:hidden;margin-bottom:10px">'
+        +'<div style="display:flex;align-items:center;gap:12px;padding:13px 18px;cursor:pointer'+(n?';border-bottom:1px solid var(--gl)':'')+'" onclick="toggleNewsRow('+c.id+')">'
+          +'<div style="flex:1;min-width:0">'
+            +'<div style="font-size:13px;font-weight:700;color:var(--navy)">'+c.name+'</div>'
+            +'<div style="font-size:11px;color:var(--ts)">'+c.cat+' · '+(c.hq||'')+scannedTxt+'</div>'
+          +'</div>'
+          +'<div class="cr-stage '+sc+'" style="font-size:10px">'+stage+'</div>'
+          +(n?'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#dcfce7;color:#166534">✓ Scanned</span>'
+              :'<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:var(--off);color:var(--gm)">Not scanned</span>')
+          +'<button type="button" onclick="event.stopPropagation();scanOneNews('+c.id+',this)" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid var(--gold);background:rgba(200,151,43,.08);color:var(--gold3);cursor:pointer;font-weight:600;white-space:nowrap">'+(n?'Re-scan':'Scan')+'</button>'
+        +'</div>'
+        +newsBody
+      +'</div>';
+    }
+    grid.innerHTML=html;
+  }catch(err){
+    console.error('renderNewsPage error:',err);
+    const grid=document.getElementById('newsGrid');
+    if(grid)grid.innerHTML='<div style="padding:20px;color:#c62828;font-size:12px">Error rendering news: '+err.message+'</div>';
+  }
 }
 
 function toggleNewsRow(id){
@@ -2564,7 +2585,7 @@ async function refreshProfilesFromCloud(){
   if(btn){btn.textContent='Refreshing...';btn.disabled=true;}
   const fbCfg=localStorage.getItem('fbConfig');
   if(!fbCfg){
-    if(btn){btn.textContent='&#8635; Refresh Profiles';btn.disabled=false;}
+    if(btn){btn.textContent='↻ Refresh Profiles';btn.disabled=false;}
     showToast('Connect Firebase in Settings to sync profiles');return;
   }
   try{
@@ -2581,7 +2602,7 @@ async function refreshProfilesFromCloud(){
       else showToast('No profiles found in cloud yet.');
     } else showToast('No cloud profiles yet.');
   }catch(e){ showToast('Refresh failed: '+e.message); }
-  if(btn){btn.textContent='&#8635; Refresh Profiles';btn.disabled=false;}
+  if(btn){btn.textContent='↻ Refresh Profiles';btn.disabled=false;}
 }
 
 function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500)}
