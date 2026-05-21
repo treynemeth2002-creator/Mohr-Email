@@ -922,7 +922,7 @@ function renderProfileScreen(){
 }
 
 let pinTarget=null,pinVal="";
-function selectProfile(idx){const p=getProfiles()[idx];if(!p)return;pinTarget=p;if(!p.pin){enterApp(p);return}pinVal="";document.getElementById("pinAv").className="pin-av c"+p.color;document.getElementById("pinAv").textContent=p.name.slice(0,2).toUpperCase();document.getElementById("pinName").textContent=p.name;document.getElementById("pinErr").textContent="";updatePinDots();document.getElementById("pinOverlay").style.display="flex"}
+function selectProfile(idx){console.log("selectProfile called with idx:",idx);const p=getProfiles()[idx];console.log("profile found:",p);if(!p){console.log("NO PROFILE - returning");return;}pinTarget=p;if(!p.pin){console.log("No PIN - calling enterApp");enterApp(p);return;}pinVal="";document.getElementById("pinAv").className="pin-av c"+p.color;document.getElementById("pinAv").textContent=p.name.slice(0,2).toUpperCase();document.getElementById("pinName").textContent=p.name;document.getElementById("pinErr").textContent="";updatePinDots();document.getElementById("pinOverlay").style.display="flex"}
 function pinKey(n){if(pinVal.length>=4)return;pinVal+=n;updatePinDots();if(pinVal.length===4)checkPin()}
 function pinDel(){pinVal=pinVal.slice(0,-1);updatePinDots()}
 function updatePinDots(){for(let i=0;i<4;i++)document.getElementById("pd"+i).className="pd"+(pinVal.length>i?" filled":"")}
@@ -947,11 +947,14 @@ function saveNewProfile(){
 }
 
 function enterApp(profile){
+  console.log("enterApp called for:", profile.name);
   currentProfile=profile;
   // Hide profile screen, show main app
+  console.log("Hiding profileScreen, showing mainApp");
   document.getElementById("profileScreen").style.display="none";
   var ma=document.getElementById("mainApp");
   ma.style.cssText="display:block !important;min-height:100vh;background:#f4f6f9";
+  console.log("mainApp style set to:", ma.style.cssText);
   var td=document.getElementById("loginTestDiv");
   if(td){td.style.display="block";td.onclick=function(){this.style.display="none";};}
   // Set nav user info
