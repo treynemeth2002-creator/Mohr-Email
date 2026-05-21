@@ -347,7 +347,7 @@ option{color:#1a2332;background:#fff}
   </div>
 </div>
 
-<div id="mainApp" style="display:none"><div id="loginTestDiv" style="display:none;position:fixed;top:0;left:0;right:0;padding:10px;background:#c62828;color:#fff;font-size:14px;font-weight:bold;z-index:99999;text-align:center">APP LOADED - if you see this, click it to dismiss</div>
+<div id="mainApp">
 <nav class="topnav">
   <div class="nav-brand"><div class="brand-txt">Mohr<span>Partners</span></div><div class="brand-badge">BD CENTER</div></div>
   <div class="nav-tabs">
@@ -922,7 +922,7 @@ function renderProfileScreen(){
 }
 
 let pinTarget=null,pinVal="";
-function selectProfile(idx){console.log("selectProfile called with idx:",idx);const p=getProfiles()[idx];console.log("profile found:",p);if(!p){console.log("NO PROFILE - returning");return;}pinTarget=p;if(!p.pin){console.log("No PIN - calling enterApp");enterApp(p);return;}pinVal="";document.getElementById("pinAv").className="pin-av c"+p.color;document.getElementById("pinAv").textContent=p.name.slice(0,2).toUpperCase();document.getElementById("pinName").textContent=p.name;document.getElementById("pinErr").textContent="";updatePinDots();document.getElementById("pinOverlay").style.display="flex"}
+function selectProfile(idx){console.log("selectProfile called with idx:",idx);const p=getProfiles()[idx];console.log("profile found:",p);if(!p)return;pinTarget=p;if(!p.pin){console.log("No PIN - calling enterApp");enterApp(p);return;}pinVal="";document.getElementById("pinAv").className="pin-av c"+p.color;document.getElementById("pinAv").textContent=p.name.slice(0,2).toUpperCase();document.getElementById("pinName").textContent=p.name;document.getElementById("pinErr").textContent="";updatePinDots();document.getElementById("pinOverlay").style.display="flex"}
 function pinKey(n){if(pinVal.length>=4)return;pinVal+=n;updatePinDots();if(pinVal.length===4)checkPin()}
 function pinDel(){pinVal=pinVal.slice(0,-1);updatePinDots()}
 function updatePinDots(){for(let i=0;i<4;i++)document.getElementById("pd"+i).className="pd"+(pinVal.length>i?" filled":"")}
@@ -947,53 +947,27 @@ function saveNewProfile(){
 }
 
 function enterApp(profile){
-  console.log("enterApp called for:", profile.name);
   currentProfile=profile;
-  // Hide profile screen, show main app
-  console.log("Hiding profileScreen, showing mainApp");
   document.getElementById("profileScreen").style.display="none";
-  var ma=document.getElementById("mainApp");
-  ma.style.cssText="display:block !important;min-height:100vh;background:#f4f6f9";
-  console.log("mainApp style set to:", ma.style.cssText);
-  var td=document.getElementById("loginTestDiv");
-  if(td){td.style.display="block";td.onclick=function(){this.style.display="none";};}
-  console.log("test div shown");
-  // Set nav user info
-  var av=document.getElementById("navAv");
-  if(av){av.className="nav-av c"+profile.color;av.textContent=profile.name.slice(0,2).toUpperCase();}
-  var nn=document.getElementById("navName"); if(nn)nn.textContent=profile.name;
-  var nt=document.getElementById("navTitle"); if(nt)nt.textContent=profile.title||"BD Associate";
-  // Reset state
+  document.getElementById("mainApp").style.display="block";
+  document.getElementById("navAv").className="nav-av c"+profile.color;
+  document.getElementById("navAv").textContent=profile.name.slice(0,2).toUpperCase();
+  document.getElementById("navName").textContent=profile.name;
+  document.getElementById("navTitle").textContent=profile.title||"BD Associate";
+  var h=new Date().getHours();
+  var greetEl=document.getElementById("dashGreet");
+  if(greetEl)greetEl.textContent=h<12?"Good morning":h<17?"Good afternoon":"Good evening";
+  var subEl=document.getElementById("dashSub");
+  if(subEl)subEl.textContent=profile.name+" · Mohr Partners BD Command Center";
   emailQueue=[];openCORId=null;aiHistory=[];notesCurrent=null;
-  // Load settings/theme (silent fail)
-  console.log("calling loadSettings");
-  try{loadSettings();}catch(e){console.error("loadSettings error:",e);}
-  console.log("calling loadTheme");
-  try{loadTheme();}catch(e){console.error("loadTheme error:",e);}
-  console.log("showing dashboard page");
-  // Show dashboard - use inline style so nothing can override it
-  document.querySelectorAll(".page").forEach(function(p){
-    p.style.display="none";
-    p.classList.remove("on");
-  });
+  loadSettings();loadTheme();
+  document.querySelectorAll(".page").forEach(function(p){p.style.display="none";p.classList.remove("on");});
   var dp=document.getElementById("page-dashboard");
   if(dp){dp.style.display="block";dp.classList.add("on");}
-  document.querySelectorAll(".ntab").forEach(function(t,i){
-    if(i===0){t.classList.add("on");}else{t.classList.remove("on");}
-  });
-  // Show AI fab
-  var fab=document.getElementById("aiFab"); if(fab)fab.style.display="flex";
-  // Render everything (each wrapped so one failure doesn't stop others)
-  console.log("calling renderDashboard");
-  try{renderDashboard();}catch(e){console.error("renderDashboard",e);}
-  console.log("enterApp complete");
-  try{renderCORs();}catch(e){console.error("renderCORs",e);}
-  try{renderPipeMini();}catch(e){console.error("renderPipeMini",e);}
-  try{renderDashboardTouchWidget();}catch(e){console.error("renderDashboardTouchWidget",e);}
-  try{renderHotLeads();}catch(e){console.error("renderHotLeads",e);}
-  // Firebase + news (background, non-blocking)
-  try{autoReconnectFirebase();}catch(e){}
-  // Auto-news disabled on startup to avoid rate limiting - refresh from News tab
+  document.querySelectorAll(".ntab").forEach(function(t,i){if(i===0)t.classList.add("on");else t.classList.remove("on");});
+  var fab=document.getElementById("aiFab");if(fab)fab.style.display="flex";
+  renderAll();
+  autoReconnectFirebase();
 }
 function logout(){currentProfile=null;openCORId=null;emailQueue=[];aiHistory=[];document.getElementById("mainApp").style.display="none";document.getElementById("profileScreen").style.display="flex";renderProfileScreen()}
 
@@ -3070,12 +3044,6 @@ function saveCorNote(corId, val){
 function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500)}
 
 window.addEventListener("DOMContentLoaded",async()=>{
-  // Force profileScreen visible immediately
-  var _ps=document.getElementById("profileScreen");
-  if(_ps)_ps.style.display="flex";
-  var _ma=document.getElementById("mainApp");
-  if(_ma)_ma.style.display="none";
-
   // Try to pre-load Firebase profiles (fail silently)
   try{
     const fbCfg=localStorage.getItem("fbConfig");
