@@ -347,6 +347,8 @@ option{color:#1a2332;background:#fff}
   </div>
 </div>
 
+</div>
+
 <div id="mainApp">
 <nav class="topnav">
   <div class="nav-brand"><div class="brand-txt">Mohr<span>Partners</span></div><div class="brand-badge">BD CENTER</div></div>
@@ -922,7 +924,18 @@ function renderProfileScreen(){
 }
 
 let pinTarget=null,pinVal="";
-function selectProfile(idx){console.log("selectProfile called with idx:",idx);const p=getProfiles()[idx];console.log("profile found:",p);if(!p)return;pinTarget=p;if(!p.pin){console.log("No PIN - calling enterApp");enterApp(p);return;}pinVal="";document.getElementById("pinAv").className="pin-av c"+p.color;document.getElementById("pinAv").textContent=p.name.slice(0,2).toUpperCase();document.getElementById("pinName").textContent=p.name;document.getElementById("pinErr").textContent="";updatePinDots();document.getElementById("pinOverlay").style.display="flex"}
+function selectProfile(idx){
+  const p=getProfiles()[idx];if(!p)return;
+  pinTarget=p;
+  if(!p.pin){enterApp(p);return;}
+  pinVal="";
+  document.getElementById("pinAv").className="pin-av c"+p.color;
+  document.getElementById("pinAv").textContent=p.name.slice(0,2).toUpperCase();
+  document.getElementById("pinName").textContent=p.name;
+  document.getElementById("pinErr").textContent="";
+  updatePinDots();
+  document.getElementById("pinOverlay").style.display="flex";
+}
 function pinKey(n){if(pinVal.length>=4)return;pinVal+=n;updatePinDots();if(pinVal.length===4)checkPin()}
 function pinDel(){pinVal=pinVal.slice(0,-1);updatePinDots()}
 function updatePinDots(){for(let i=0;i<4;i++)document.getElementById("pd"+i).className="pd"+(pinVal.length>i?" filled":"")}
@@ -948,30 +961,22 @@ function saveNewProfile(){
 
 function enterApp(profile){
   currentProfile=profile;
-  // Step 1: hide profile screen with multiple methods
-  var ps=document.getElementById("profileScreen");
-  if(ps){ps.style.cssText="display:none !important;visibility:hidden;opacity:0;pointer-events:none";}
-  // Step 2: show mainApp
-  var ma=document.getElementById("mainApp");
-  if(ma){ma.style.cssText="display:block !important;visibility:visible;opacity:1";}
-  // Step 3: set nav
+  document.getElementById("profileScreen").style.display="none";
+  document.getElementById("mainApp").style.display="block";
   var av=document.getElementById("navAv");
   if(av){av.className="nav-av c"+profile.color;av.textContent=profile.name.slice(0,2).toUpperCase();}
   var nn=document.getElementById("navName");if(nn)nn.textContent=profile.name;
   var nt=document.getElementById("navTitle");if(nt)nt.textContent=profile.title||"BD Associate";
   var h=new Date().getHours();
   var gr=document.getElementById("dashGreet");if(gr)gr.textContent=h<12?"Good morning":h<17?"Good afternoon":"Good evening";
-  var su=document.getElementById("dashSub");if(su)su.textContent=profile.name+" \u00b7 Mohr Partners";
-  // Step 4: show dashboard tab using ONLY classList (no inline styles)
-  document.querySelectorAll(".page").forEach(function(p){p.classList.remove("on");});
-  var dp=document.getElementById("page-dashboard");if(dp)dp.classList.add("on");
-  document.querySelectorAll(".ntab").forEach(function(t,i){if(i===0)t.classList.add("on");else t.classList.remove("on");});
-  // Step 5: state + settings
+  var su=document.getElementById("dashSub");if(su)su.textContent=profile.name+" · Mohr Partners";
   emailQueue=[];openCORId=null;aiHistory=[];notesCurrent=null;
   try{loadSettings();}catch(e){}
   try{loadTheme();}catch(e){}
+  document.querySelectorAll(".page").forEach(function(p){p.classList.remove("on");});
+  var dp=document.getElementById("page-dashboard");if(dp)dp.classList.add("on");
+  document.querySelectorAll(".ntab").forEach(function(t,i){if(i===0)t.classList.add("on");else t.classList.remove("on");});
   var fab=document.getElementById("aiFab");if(fab)fab.style.display="flex";
-  // Step 6: render after paint
   setTimeout(function(){
     try{renderDashboard();}catch(e){}
     try{renderDashboardTouchWidget();}catch(e){}
@@ -982,6 +987,35 @@ function enterApp(profile){
       try{autoReconnectFirebase();}catch(e){}
     },50);
   },0);
+}function enterApp(profile){
+  currentProfile=profile;
+  document.getElementById("profileScreen").style.display="none";
+  document.getElementById("mainApp").style.display="block";
+  var av=document.getElementById("navAv");
+  if(av){av.className="nav-av c"+profile.color;av.textContent=profile.name.slice(0,2).toUpperCase();}
+  var nn=document.getElementById("navName");if(nn)nn.textContent=profile.name;
+  var nt=document.getElementById("navTitle");if(nt)nt.textContent=profile.title||"BD Associate";
+  var h=new Date().getHours();
+  var gr=document.getElementById("dashGreet");if(gr)gr.textContent=h<12?"Good morning":h<17?"Good afternoon":"Good evening";
+  var su=document.getElementById("dashSub");if(su)su.textContent=profile.name+" · Mohr Partners";
+  emailQueue=[];openCORId=null;aiHistory=[];notesCurrent=null;
+  try{loadSettings();}catch(e){}
+  try{loadTheme();}catch(e){}
+  document.querySelectorAll(".page").forEach(function(p){p.classList.remove("on");});
+  var dp=document.getElementById("page-dashboard");if(dp)dp.classList.add("on");
+  document.querySelectorAll(".ntab").forEach(function(t,i){if(i===0)t.classList.add("on");else t.classList.remove("on");});
+  var fab=document.getElementById("aiFab");if(fab)fab.style.display="flex";
+  setTimeout(function(){
+    try{renderDashboard();}catch(e){}
+    try{renderDashboardTouchWidget();}catch(e){}
+    try{renderHotLeads();}catch(e){}
+    setTimeout(function(){
+      try{renderCORs();}catch(e){}
+      try{renderPipeMini();}catch(e){}
+      try{autoReconnectFirebase();}catch(e){}
+    },50);
+  },0);
+
 }
 function logout(){currentProfile=null;openCORId=null;emailQueue=[];aiHistory=[];document.getElementById("mainApp").style.display="none";document.getElementById("profileScreen").style.display="flex";renderProfileScreen()}
 
