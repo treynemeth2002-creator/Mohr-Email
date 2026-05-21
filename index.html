@@ -33,7 +33,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
 .add-box h2{color:#fff;font-size:18px;margin-bottom:22px;text-align:center}
 .add-box label{display:block;color:var(--gm);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
 .add-box input{width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:9px 13px;font-size:14px;margin-bottom:16px;outline:none}
-.add-box select{width:100%;background:#fff;border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#1a2332;padding:9px 13px;font-size:14px;margin-bottom:16px;outline:none}
+.add-box .overlay select,.add-box select{width:100%;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:8px;color:#fff;padding:9px 13px;font-size:14px;margin-bottom:16px;outline:none}
+.overlay option,.add-box option,
+select option{color:var(--tp);background:#fff}
+.overlay select option,.add-box select option{color:#fff !important;background:#1a2332 !important}
 .add-box input:focus{border-color:var(--gold)}
 .swatch-row{display:flex;gap:9px;margin-bottom:16px;flex-wrap:wrap}
 .sw{width:34px;height:34px;border-radius:6px;cursor:pointer;border:3px solid transparent;transition:border-color .15s}.sw.sel{border-color:var(--gold)}
@@ -41,7 +44,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
 .btn-row{display:flex;gap:10px;margin-top:4px}
 .btn-g{background:var(--gold);color:var(--navy3);border:none;border-radius:8px;padding:11px 18px;font-size:13px;font-weight:700;cursor:pointer;flex:1;transition:background .2s}.btn-g:hover{background:var(--gold2)}
 .btn-o{background:transparent;color:var(--gm);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:11px 18px;font-size:13px;cursor:pointer;flex:1;transition:all .2s}.btn-o:hover{border-color:#fff;color:#fff}
-#mainApp{display:none;min-height:100vh;background:var(--off)}
+#mainApp{min-height:100vh;background:var(--off)}
 .topnav{background:var(--navy);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:62px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.3)}
 .nav-brand{display:flex;align-items:center;gap:10px}
 .brand-txt{font-size:18px;font-weight:800;color:#fff;letter-spacing:1px}.brand-txt span{color:var(--gold)}
@@ -218,6 +221,149 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--navy);color:#fff;font-size:12px;font-weight:600;padding:9px 18px;border-radius:8px;border:1px solid var(--gold);opacity:0;transition:all .2s;pointer-events:none;z-index:999;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .theme-opt{border:2px solid var(--gl);border-radius:12px;padding:16px 10px;cursor:pointer;text-align:center;transition:all .2s}
+
+/* ALL selects: default dark text */
+option{color:#1a2332;background:#fff}
+/* Dark modal overlays */
+#logTouchCOROverlay option,#preGenOverlay option,#addOverlay option,#pinOverlay option,#editProfileOverlay option{color:#fff !important;background:#1e2d45 !important}
+/* Filter bar and page selects always readable */
+.fs,.fs option,.cr-body select,.cr-body select option,.page select option{color:var(--tp) !important;background:#fff !important}
+.fs:focus,.si:focus{border-color:var(--gold)}
+.f-count{font-size:12px;color:var(--ts);font-weight:600;white-space:nowrap;padding:8px 0}
+.cor-row{background:#fff;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.05);overflow:hidden;border:2px solid transparent;cursor:pointer;transition:all .2s;margin-bottom:10px}
+.cor-row:hover{border-color:var(--gold);box-shadow:0 4px 16px rgba(0,0,0,.1)}.cor-row.active{border-color:var(--gold)}
+.cr-top{display:flex;align-items:center;gap:14px;padding:14px 18px}
+.cr-num{font-size:11px;font-weight:700;color:var(--gm);font-family:monospace;min-width:24px}
+.cr-name{font-size:14px;font-weight:700;color:var(--navy);flex:1}
+.cr-cat{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px}
+.cr-locs{font-size:11px;color:var(--ts);font-family:monospace;white-space:nowrap}
+.cr-stage{font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px}
+.cr-expand{font-size:16px;color:var(--gm);margin-left:4px}
+.cr-body{display:none;border-top:1px solid var(--gl);padding:16px 18px;background:#fafbfd}
+.cr-body.open{display:block}
+.type-healthcare{background:#dbeafe;color:#1d4ed8}.type-distribution{background:#d1fae5;color:#065f46}.type-logistics{background:#fed7aa;color:#c2410c}.type-industrial{background:#fee2e2;color:#991b1b}.type-professional{background:#e9d5ff;color:#7c3aed}
+.s-cold{background:#dbeafe;color:#1d4ed8}.s-contacted{background:#fed7aa;color:#c2410c}.s-responded{background:#e9d5ff;color:#7c3aed}.s-meeting{background:#bbf7d0;color:#166534}.s-active{background:rgba(200,151,43,.2);color:var(--gold3)}.s-closed{background:#dcfce7;color:#166534}
+.pc-cold{border-left-color:#3b82f6}.pc-contacted{border-left-color:#f97316}.pc-responded{border-left-color:#a855f7}.pc-meeting{border-left-color:#22c55e}.pc-active{border-left-color:var(--gold)}.pc-closed{border-left-color:#16a34a}
+.contacts-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.ct-card{background:#fff;border:1.5px solid var(--gl);border-radius:8px;padding:10px 13px;cursor:pointer;transition:all .15s;min-width:175px;flex:1;position:relative}
+.ct-card:hover{border-color:var(--gold)}.ct-card.sel{border-color:var(--gold);background:rgba(200,151,43,.05)}
+.ct-check{position:absolute;top:8px;right:8px;width:16px;height:16px;border-radius:50%;border:1.5px solid var(--gl);display:flex;align-items:center;justify-content:center;font-size:9px;background:#fff}
+.ct-card.sel .ct-check{background:var(--gold);border-color:var(--gold);color:var(--navy3)}
+.ct-role{font-size:10px;color:var(--gold3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
+.ct-name{font-size:12px;font-weight:700;color:var(--navy);padding-right:18px}
+.ct-email{font-size:10px;color:var(--ts);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.angle-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.abt{font-size:11px;padding:4px 10px;border-radius:6px;cursor:pointer;border:1.5px solid var(--gl);background:#fff;color:var(--ts);font-weight:600;transition:all .15s}
+.abt:hover{border-color:var(--gold);color:var(--gold)}.abt.on{background:var(--gold);border-color:var(--gold);color:var(--navy3)}
+.draft-area{background:#fff;border:1.5px solid var(--gl);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.draft-hdr{padding:11px 16px;border-bottom:1px solid var(--gl);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.draft-title{font-size:13px;font-weight:700;color:var(--navy)}
+.gen-btn{background:var(--navy);color:#fff;border:none;border-radius:7px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .2s}.gen-btn:hover{background:var(--navy2)}.gen-btn:disabled{opacity:.45;cursor:not-allowed}
+.draft-inner{padding:16px}
+.field-row{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:10px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.5px}
+.field input,.field textarea{background:var(--off);border:1.5px solid var(--gl);border-radius:7px;padding:7px 10px;font-size:12px;color:var(--tp);outline:none;transition:border .15s;font-family:inherit}
+.field input:focus,.field textarea:focus{border-color:var(--gold)}
+.email-ta{width:100%;min-height:150px;resize:vertical;line-height:1.65}
+.gen-state{display:none;align-items:center;justify-content:center;min-height:120px;gap:8px;color:var(--ts);font-size:13px}
+.spin{width:16px;height:16px;border:2px solid var(--gl);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.draft-footer{padding:11px 16px;border-top:1px solid var(--gl);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.act-btn{padding:7px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid var(--gl);background:#fff;color:var(--ts);display:flex;align-items:center;gap:5px;transition:all .15s;font-family:inherit}
+.act-btn:hover{border-color:var(--gold);color:var(--gold3)}
+.act-btn.outlook{background:var(--off);border-color:var(--navy);color:var(--navy)}
+.act-btn.primary{background:var(--navy);border-color:var(--navy);color:#fff}
+.act-btn.log{background:rgba(200,151,43,.1);border-color:var(--gold);color:var(--gold3)}
+.seq-tabs{display:flex;margin-top:7px;max-width:290px;border:1.5px solid var(--gl);border-radius:8px;overflow:hidden;background:var(--off)}
+.seq-tab{flex:1;padding:6px;font-size:10px;font-weight:700;text-align:center;cursor:pointer;border:none;background:none;color:var(--ts);transition:all .15s}
+.seq-tab.on{background:var(--navy);color:#fff}
+.queue-box{background:#fff;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.05);overflow:hidden}
+.qh{padding:12px 18px;border-bottom:1px solid var(--gl);display:flex;align-items:center;justify-content:space-between}
+.q-cnt{font-size:11px;padding:1px 7px;border-radius:10px;background:rgba(200,151,43,.15);color:var(--gold3);font-weight:700}
+.send-all-btn{background:var(--gold);border:none;border-radius:7px;padding:7px 14px;font-size:11px;font-weight:700;color:var(--navy3);cursor:pointer}
+.qi{padding:11px 18px;border-bottom:1px solid var(--gl);display:flex;align-items:center;gap:11px}.qi:last-child{border:none}
+.qi-info{flex:1;min-width:0}
+.qi-co{font-size:12px;font-weight:700;color:var(--navy)}.qi-to{font-size:10px;color:var(--ts);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qi-subj{font-size:11px;color:var(--ts);font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+.qi-open{padding:5px 11px;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;border:1.5px solid var(--success);background:rgba(46,125,50,.08);color:var(--success);white-space:nowrap;flex-shrink:0;font-family:inherit}
+.qi-del{padding:4px 8px;border-radius:6px;font-size:12px;cursor:pointer;border:1.5px solid var(--gl);background:none;color:var(--gm);flex-shrink:0}.qi-del:hover{border-color:#c62828;color:#c62828}
+.eq{padding:22px;text-align:center;color:var(--gm);font-size:12px}
+.pipeline-board{display:flex;gap:14px;overflow-x:auto;padding-bottom:8px;align-items:flex-start}
+.pl-col{flex:0 0 210px;background:var(--off);border-radius:10px;overflow:hidden}
+.pl-col-hdr{padding:12px 14px;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:space-between}
+.pl-cnt{font-size:11px;font-weight:700;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.3)}
+.pl-cards{padding:8px;min-height:80px;display:flex;flex-direction:column;gap:7px}
+.pl-card{background:#fff;border-radius:8px;padding:11px 13px;box-shadow:0 1px 4px rgba(0,0,0,.07);cursor:grab;transition:box-shadow .15s;border-left:3px solid transparent;user-select:none}
+.pl-card:hover{box-shadow:0 3px 12px rgba(0,0,0,.12)}
+.pl-co{font-size:12px;font-weight:700;color:var(--navy)}.pl-ct{font-size:10px;color:var(--ts);margin-top:2px}.pl-date{font-size:10px;color:var(--gm);margin-top:4px}
+.notes-grid{display:grid;grid-template-columns:280px 1fr;gap:18px;height:calc(100vh - 210px)}
+@media(max-width:860px){.notes-grid{grid-template-columns:1fr;height:auto}}
+.notes-sidebar{background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden;display:flex;flex-direction:column}
+.ns-hdr{padding:14px 16px;border-bottom:1px solid var(--gl);display:flex;align-items:center;justify-content:space-between}
+.notes-list{overflow-y:auto;flex:1}
+.note-item{padding:12px 16px;border-bottom:1px solid var(--gl);cursor:pointer;transition:background .15s}.note-item:hover{background:var(--off)}.note-item.on{background:rgba(200,151,43,.07);border-left:3px solid var(--gold)}
+.ni-co{font-size:13px;font-weight:600;color:var(--navy)}.ni-prev{font-size:11px;color:var(--ts);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ni-date{font-size:10px;color:var(--gm);margin-top:3px}
+.notes-editor{background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden;display:flex;flex-direction:column}
+.ne-hdr{padding:14px 18px;border-bottom:1px solid var(--gl);display:flex;align-items:center;justify-content:space-between}
+.ne-co{font-size:15px;font-weight:700;color:var(--navy)}.ne-date{font-size:11px;color:var(--gm)}
+.ne-ta{flex:1;border:none;padding:20px;font-size:14px;color:var(--tp);resize:none;outline:none;font-family:inherit;line-height:1.7;background:#fff;min-height:300px}
+.ne-footer{padding:12px 18px;border-top:1px solid var(--gl);display:flex;align-items:center;justify-content:space-between}
+.wl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:24px}
+.wl-card{background:#fff;border-radius:10px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.06);text-align:center}
+.wl-num{font-size:28px;font-weight:800}.wl-lbl{font-size:11px;color:var(--ts);text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
+.wl-table{background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden}
+.wlt-hdr{display:grid;grid-template-columns:2fr 1.2fr 1fr 1fr 1.5fr;background:var(--navy);padding:11px 18px;font-size:11px;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px}
+.wlt-row{display:grid;grid-template-columns:2fr 1.2fr 1fr 1fr 1.5fr;padding:11px 18px;border-bottom:1px solid var(--gl);font-size:12px;align-items:center}.wlt-row:hover{background:var(--off)}.wlt-row:last-child{border:none}
+.wl-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+.wl-win{background:#dcfce7;color:#166534}.wl-loss{background:#fee2e2;color:#991b1b}.wl-pend{background:#fef9c3;color:#854d0e}
+.settings-grid{display:grid;grid-template-columns:220px 1fr;gap:22px}
+@media(max-width:860px){.settings-grid{grid-template-columns:1fr}}
+.settings-nav{background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);padding:8px;height:fit-content}
+.snav-item{padding:10px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;color:var(--ts);transition:all .15s}
+.snav-item:hover{background:var(--off);color:var(--navy)}.snav-item.on{background:rgba(200,151,43,.1);color:var(--gold3);font-weight:700}
+.settings-content{background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);padding:28px}
+.settings-section{display:none}.settings-section.on{display:block}
+.sc-title{font-size:17px;font-weight:700;color:var(--navy);margin-bottom:6px}
+.sc-sub{font-size:13px;color:var(--ts);margin-bottom:24px}
+.set-field{margin-bottom:20px}
+.set-field label{display:block;font-size:12px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+.set-field input,.set-field select,.set-field textarea{width:100%;background:var(--off);border:1.5px solid var(--gl);border-radius:8px;padding:10px 13px;font-size:13px;color:var(--tp);outline:none;transition:border .15s;font-family:inherit}
+.set-field input:focus,.set-field select:focus,.set-field textarea:focus{border-color:var(--gold)}
+.set-field textarea{resize:vertical;min-height:90px;line-height:1.6}
+.tone-options{display:flex;gap:10px;flex-wrap:wrap}
+.tone-opt{padding:9px 18px;border-radius:8px;border:1.5px solid var(--gl);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;color:var(--ts)}.tone-opt:hover{border-color:var(--gold)}.tone-opt.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.tone-chip{padding:7px 14px;border-radius:20px;border:1.5px solid rgba(255,255,255,.2);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;color:rgba(255,255,255,.6);background:rgba(255,255,255,.06)}.tone-chip:hover{border-color:var(--gold);color:var(--gold2)}.tone-chip.on{background:var(--gold);border-color:var(--gold);color:var(--navy3);font-weight:700}
+.save-btn{background:var(--navy);color:#fff;border:none;border-radius:8px;padding:11px 24px;font-size:13px;font-weight:700;cursor:pointer;transition:background .2s;margin-top:8px}.save-btn:hover{background:var(--navy2)}
+.api-row{display:flex;gap:10px;align-items:flex-end}
+.api-row .set-field{flex:1;margin:0}
+.api-save{padding:10px 16px;border-radius:8px;background:var(--gold);border:none;font-size:12px;font-weight:700;color:var(--navy3);cursor:pointer;white-space:nowrap;height:42px}.api-save:hover{background:var(--gold2)}
+.key-status{font-size:11px;margin-top:5px}.key-status.ok{color:var(--success)}.key-status.bad{color:#c62828}
+.ai-fab{position:fixed;bottom:22px;right:22px;z-index:200;background:var(--navy);border:2px solid var(--gold);border-radius:50%;width:50px;height:50px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 20px rgba(0,40,85,.4);transition:all .2s}
+.ai-panel{position:fixed;bottom:84px;right:22px;z-index:199;width:380px;height:520px;background:var(--navy);border:1px solid rgba(200,151,43,.3);border-radius:14px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.45);transform:translateY(18px) scale(.97);opacity:0;pointer-events:none;transition:all .2s ease}
+.ai-panel.open{transform:translateY(0) scale(1);opacity:1;pointer-events:all}
+.ai-ph{padding:12px 15px;border-bottom:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.2)}
+.ai-pt{font-size:13px;font-weight:700;color:#fff;display:flex;align-items:center;gap:7px}
+.ai-dot2{width:7px;height:7px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.ai-psub{font-size:10px;color:var(--gm);margin-top:1px}
+.ai-msgs{flex:1;overflow-y:auto;padding:13px;display:flex;flex-direction:column;gap:9px}
+.ai-msg{display:flex;gap:7px;align-items:flex-start}.ai-msg.u{flex-direction:row-reverse}
+.ai-av{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px}
+.ai-av.claude{background:rgba(200,151,43,.2);border:1px solid rgba(200,151,43,.3);color:var(--gold)}
+.ai-av.user{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff}
+.ai-bbl{max-width:280px;padding:8px 11px;border-radius:11px;font-size:12px;line-height:1.55}
+.ai-bbl.claude{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#e8f0fe;border-radius:11px 11px 11px 2px}
+.ai-bbl.user{background:rgba(200,151,43,.15);border:1px solid rgba(200,151,43,.25);color:#fff;border-radius:11px 11px 2px 11px}
+.ai-chips{padding:0 12px 9px;display:flex;gap:5px;flex-wrap:wrap}
+.ai-chip{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:4px 9px;font-size:10px;color:var(--gm);cursor:pointer}.ai-chip:hover{border-color:var(--gold);color:var(--gold)}
+.ai-inp-row{padding:10px;border-top:1px solid rgba(255,255,255,.08);display:flex;gap:7px;align-items:flex-end}
+.ai-inp{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:9px;padding:8px 11px;color:#fff;font-size:12px;resize:none;outline:none;max-height:90px;line-height:1.5;font-family:inherit}.ai-inp:focus{border-color:var(--gold)}
+.ai-send{background:var(--gold);border:none;border-radius:7px;width:32px;height:32px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px}.ai-send:disabled{opacity:.4;cursor:not-allowed}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--navy);color:#fff;font-size:12px;font-weight:600;padding:9px 18px;border-radius:8px;border:1px solid var(--gold);opacity:0;transition:all .2s;pointer-events:none;z-index:999;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.theme-opt{border:2px solid var(--gl);border-radius:12px;padding:16px 10px;cursor:pointer;text-align:center;transition:all .2s}
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script type="module" id="firebaseModule"></script>
@@ -240,7 +386,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
     </div>
     <div id="ps-apiStatus" style="font-size:11px;margin-top:7px;color:rgba(255,255,255,.45)"></div>
   </div>
-</div>
 
 <div class="overlay" id="pinOverlay" style="display:none">
   <div class="pin-box">
@@ -339,7 +484,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
   </div>
 </div>
 
-<div id="mainApp">
+<div id="mainApp" style="display:none">
 <nav class="topnav">
   <div class="nav-brand"><div class="brand-txt">Mohr<span>Partners</span></div><div class="brand-badge">BD CENTER</div></div>
   <div class="nav-tabs">
@@ -498,6 +643,36 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
   <div>
     <div style="font-size:11px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Previously Loaded</div>
     <div id="newsHistory" style="display:flex;flex-direction:column;gap:8px"></div>
+  </div>
+</div>
+
+<div class="page" id="page-touches">
+  <div class="ph">
+    <div><div class="pt">Touch Tracker</div><div class="ps2">Weekly outreach progress</div></div>
+    <button type="button" class="act-btn" onclick="openLogTouchGeneral()" style="border-color:var(--gold);color:var(--gold3)">+ Log Touch</button>
+  </div>
+  <!-- Big number -->
+  <div style="display:grid;grid-template-columns:1fr 2fr;gap:20px;margin-bottom:22px">
+    <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.06);text-align:center">
+      <div id="bigTouchNum" style="font-size:56px;font-weight:800;color:var(--navy)">0</div>
+      <div style="font-size:13px;color:var(--ts);margin-bottom:12px">touches this week</div>
+      <div style="background:var(--gl);border-radius:10px;height:10px;overflow:hidden">
+        <div id="bigTouchBar" style="height:100%;border-radius:10px;background:var(--gold);transition:width .4s;width:0%"></div>
+      </div>
+      <div id="bigTouchPct" style="font-size:11px;color:var(--gm);margin-top:6px">0% of 150 goal</div>
+    </div>
+    <div id="touchTypeCards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-content:start"></div>
+  </div>
+  <!-- History + top companies -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06)">
+      <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:14px">Last 4 Weeks</div>
+      <div id="weekHistory"></div>
+    </div>
+    <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06)">
+      <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:14px">Top Companies Touched</div>
+      <div id="topTouchedCos"></div>
+    </div>
   </div>
 </div>
 
@@ -674,7 +849,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
     </div>
   </div>
 </div>
-</div>
 
 <button type="button" class="ai-fab" id="aiFab" onclick="toggleAI()">&#10022;</button>
 <div class="ai-panel" id="aiPanel">
@@ -700,7 +874,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
       <div><label style="display:block;color:var(--gm);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">Type</label>
-        <select id="ltc-type" style="width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:9px 13px;font-size:13px;outline:none">
+        <select id="ltc-type" onchange="renderLTCDynamicFields()" style="width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:9px 13px;font-size:13px;outline:none">
           <option>Email</option><option>Call</option><option>LinkedIn</option><option>In-Person</option><option>Other</option>
         </select>
       </div>
@@ -714,8 +888,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
     <label style="display:block;color:var(--gm);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">Contact</label>
     <input type="text" id="ltc-contact" placeholder="Contact name" style="width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:9px 13px;font-size:13px;margin-bottom:14px;outline:none">
 
-    <label style="display:block;color:var(--gm);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">Subject / Notes</label>
-    <input type="text" id="ltc-subject" placeholder="Email subject or notes..." style="width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:9px 13px;font-size:13px;margin-bottom:14px;outline:none">
+    <div id="ltc-dynamic-fields"></div>
 
     <label style="display:block;color:var(--gm);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">Move to Stage</label>
     <select id="ltc-stage" style="width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:9px 13px;font-size:13px;margin-bottom:14px;outline:none">
@@ -748,7 +921,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
 </div>
 
 <!-- ACTIVITY LOG MODAL -->
-<div class="overlay" id="activityOverlay" style="display:none;align-items:flex-start;padding:30px 20px;overflow-y:auto">
+<div class="overlay" id="activityOverlay" style="display:none;align-items:flex-start;padding:30px 20px;overflow-y:auto"> style="display:none;align-items:flex-start;padding:30px 20px;overflow-y:auto">
   <div style="background:#fff;border-radius:16px;width:100%;max-width:680px;overflow:hidden;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)">
     <div style="background:var(--navy);padding:18px 24px;display:flex;align-items:center;justify-content:space-between">
       <div>
@@ -803,54 +976,54 @@ const STAGES=["Cold","Contacted","Responded","Meeting Set","Active Opp","Closed"
 const SC=["s-cold","s-contacted","s-responded","s-meeting","s-active","s-closed"];
 const PC=["pc-cold","pc-contacted","pc-responded","pc-meeting","pc-active","pc-closed"];
 const COS=[
-  {id:1,name:"Arise Industrial",cat:"Industrial",locs:4,rev:"$6.5M+",hq:"Columbus, OH",problems:["Portfolio Audit","Acquisition Support","Lease Admin"],problem:"Early-stage manufacturing PE platform. Portfolio audit and rightsizing as acquisitions grow.",contacts:[{role:"Co-Founder & CEO",name:"Zachary Guisinger",email:"Zac.Guisinger@ariseindustrial.com"},{role:"CFO",name:"Doug Wisel",email:"doug.wisel@ariseindustrial.com"}]},
-  {id:3,name:"SRS Distribution",cat:"Distribution",locs:760,rev:"$2.2B+",hq:"McKinney, TX",problems:["Lease Admin","CAM Audit","Acquisition Support"],problem:"Home Depot subsidiary with major acquisitions in progress. Large multi-brand portfolio needs CAM audits and lease admin. JLL reps them.",contacts:[{role:"CEO",name:"Daniel Tinker",email:"dtinker@srsdistribution.com"},{role:"CFO",name:"Ryan Nelson",email:"rnelson@srsdistribution.com"},{role:"Chief Dev Officer",name:"Alfred Litchenburg",email:"al.litchenburg@srsdistribution.com"}]},
-  {id:4,name:"Crane Worldwide Logistics",cat:"Logistics",locs:130,rev:"$3.3B+",hq:"Houston, TX",problems:["Bill Pay","Lease Admin","International"],problem:"Privately held global 3PL with international expansion ongoing. No main tenant rep identified — Bill Pay and lease admin are strong wedge.",contacts:[{role:"CEO",name:"Jared Crane",email:"jared.crane@craneww.com"},{role:"CFO",name:"Michelle Ford",email:"mford@craneww.com"}]},
-  {id:5,name:"Builders FirstSource",cat:"Distribution",locs:649,rev:"$15.2B+",hq:"Irving, TX",problems:["Rightsizing","CAM Audit","Consolidation"],problem:"Multiple facility consolidations underway. Revenue declining — rightsizing and CAM audits timely. Uses Colliers.",contacts:[{role:"CFO",name:"Pete Beckmann",email:"peter.beckmann@bldr.com"},{role:"RE Portfolio Mgr",name:"Travis Endres",email:"travis.endres@bldr.com"}]},
-  {id:6,name:"Marcone (mSupply)",cat:"Distribution",locs:154,rev:"$148M+",hq:"Creve Coeur, MO",problems:["Lease Admin","Portfolio Audit","Acquisition Support"],problem:"PE-backed (Genstar) roll-up with high risk of overpaying rent from acquired leases.",contacts:[{role:"CEO",name:"Asterios Satrazemis",email:""},{role:"CFO",name:"Raymond Andrews",email:""}]},
-  {id:7,name:"Uline",cat:"Distribution",locs:43,rev:"$3.6B+",hq:"Pleasant Prairie, WI",problems:["Sale Leaseback","Bill Pay","Project Mgmt"],problem:"Expanding aggressively with large-scale leased facilities at mega-scale.",contacts:[{role:"Vice President",name:"Steve Uihlein",email:"suihlein@uline.com"}]},
-  {id:8,name:"Maxim Crane Works",cat:"Industrial",locs:57,rev:"$902M+",hq:"Canonsburg, PA",problems:["Acquisition Support","Lease Admin","Sale Leaseback"],problem:"High acquisition pace. New COO recently. Lease assimilation and sale-leaseback are the play.",contacts:[{role:"CEO",name:"Paul McDonnell",email:"p.mcdonnell@maximcrane.com"},{role:"COO",name:"Larry Lis",email:"llis@maximcrane.com"}]},
-  {id:9,name:"84 Lumber",cat:"Distribution",locs:320,rev:"$7B+",hq:"Eighty Four, PA",problems:["Bill Pay","Lease Admin","Site Selection"],problem:"Private, expanding westward. Uses C&W occasionally. Bill Pay and lease admin wedge.",contacts:[{role:"COO",name:"Frank Cicero",email:"frank.cicero@84lumber.com"},{role:"CFO",name:"Paul Lentz",email:""}]},
-  {id:11,name:"Clean Earth",cat:"Industrial",locs:72,rev:"$1.2B+",hq:"King of Prussia, PA",problems:["Acquisition Support","Lease Admin","Rightsizing"],problem:"Pending acquisition by Veolia. Pre-acquisition lease admin, rightsizing, and portfolio audit are highly timely.",contacts:[{role:"President",name:"Jeff Beswick",email:"jbeswick@cleanearthinc.com"},{role:"CFO",name:"Michael Polcovich",email:"mpolcovich@cleanearthinc.com"}]},
-  {id:12,name:"CBIZ",cat:"Professional",locs:320,rev:"$2.8B+",hq:"Independence, OH",problems:["Portfolio Audit","Rightsizing","Lease Admin"],problem:"Post-Marcum acquisition. Lease assimilation and rightsizing directly applicable.",contacts:[{role:"CEO",name:"Jerry Grisko",email:"jgrisko@cbiz.com"},{role:"CFO",name:"Brad Lakhia",email:"brad.lakhia@cbiz.com"},{role:"SVP Corp Dev",name:"Matt Morelli",email:"mmorelli@cbiz.com"}]},
-  {id:13,name:"BlueLinx",cat:"Distribution",locs:60,rev:"$3B+",hq:"Marietta, GA",problems:["De Novo Expansion","Sale Leaseback","Lease Admin"],problem:"New greenfield branches. Evaluating new markets. History of sale-leasebacks.",contacts:[{role:"CEO",name:"Shyam Reddy",email:"shyam.reddy@bluelinxco.com"},{role:"CFO",name:"Kelly Wall",email:"kelly.wall@bluelinxco.com"}]},
-  {id:14,name:"Alta Equipment Group",cat:"Industrial",locs:80,rev:"$1.8B+",hq:"Livonia, MI",problems:["Lease Admin","Acquisition Support","De Novo Expansion"],problem:"High acquisition pace. Expanding into new geographies. Lease admin and greenfield selection.",contacts:[{role:"CEO",name:"Ryan Greenawalt",email:"ryan@altg.com"},{role:"CFO",name:"Anthony Colucci",email:"tony.colucci@altaequipment.com"}]},
-  {id:15,name:"BrightView",cat:"Industrial",locs:191,rev:"$2.7B+",hq:"Blue Bell, PA",problems:["Lease Admin","Rightsizing","Consolidation"],problem:"Revenue declining. Divested franchise. Many leased branches at short avg terms.",contacts:[{role:"CEO",name:"Dale Asplund",email:"dale.asplund@brightview.com"},{role:"CFO",name:"Brett Urban",email:"brett-urban@brightview.com"}]},
-  {id:16,name:"Medrite Urgent Care",cat:"Healthcare",locs:24,rev:"$200M+",hq:"New York, NY",problems:["De Novo Expansion","CAM Audit","Consolidation"],problem:"Medtail platform expanding into new markets. Dense NYC footprint may have consolidation opportunities.",contacts:[{role:"Founder & CEO",name:"Samuel Fisch",email:"sfisch@medrite.com"},{role:"Dir. Operations",name:"Nina Isola",email:"nisola@medrite.com"}]},
-  {id:17,name:"Fast Pace Health",cat:"Healthcare",locs:228,rev:"$366M+",hq:"Franklin, TN",problems:["Site Selection","CAM Audit","Lease Admin"],problem:"PE-backed large rural clinic network expanding into new states. Long-term NNN leases are a major CAM audit opportunity.",contacts:[{role:"CEO",name:"Gregory Steil",email:"greg.steil@fastpacehealth.com"},{role:"CFO",name:"Randall Overton",email:"randy.overton@fastpacehealth.com"}]},
-  {id:18,name:"American Heart Association",cat:"Professional",locs:85,rev:"$1.3B+",hq:"Dallas, TX",problems:["Lease Admin","Site Selection","Consolidation"],problem:"Nonprofit HQ Dallas with many leased locations nationwide. Recent consolidation activity signals strategic planning.",contacts:[{role:"CEO",name:"Nancy Brown",email:"nancy.brown@heart.org"},{role:"COO",name:"Suzie Upton",email:"suzieu@heart.org"},{role:"CFO",name:"Cynthia Roberts",email:"cyndi.roberts@heart.org"}]},
-  {id:19,name:"Smile Partners",cat:"Healthcare",locs:124,rev:"$190M+",hq:"Troy, MI",problems:["De Novo Expansion","Lease Admin","Acquisition Support"],problem:"PE-backed DSO with new continuation fund. Shifting to greenfield de novo alongside acquisitions.",contacts:[{role:"CEO",name:"David Gaspar",email:"dgaspar@smilepartnersusa.com"},{role:"CDO",name:"Nathan Cox",email:"nathan.cox@smilepartnersusa.com"}]},
-  {id:20,name:"US Specialists Management",cat:"Healthcare",locs:108,rev:"N/A",hq:"Fort Worth, TX",problems:["Lease Admin","CAM Audit","Acquisition Support"],problem:"Physician MSO with rapid acquisition pace. High rent overpayment risk from acquired leases. CEO connection.",contacts:[{role:"CEO",name:"Robert Yonke",email:"bob.yonke@ussm.com"},{role:"President & COO",name:"Michael Bukosky",email:"mike.bukosky@ussm.com"}]},
-  {id:21,name:"Forward Air",cat:"Logistics",locs:128,rev:"$2.5B+",hq:"Coppell, TX",problems:["Rightsizing","Lease Admin","Consolidation"],problem:"Post-acquisition integration with terminal consolidation underway. Board reviewed strategic alternatives. Lease rightsizing urgent.",contacts:[{role:"CEO",name:"Shawn Stewart",email:"shawn.stewart@forwardair.com"},{role:"CFO",name:"Jamie Pierson",email:"jpierson@forwardair.com"}]},
-  {id:22,name:"Fusion Academy",cat:"Healthcare",locs:82,rev:"$314M+",hq:"Grand Rapids, MI",problems:["Site Selection","Lease Admin","Consolidation"],problem:"Private K-12 in high-income submarkets. JLL reps them. Expanding to new campuses.",contacts:[{role:"CEO",name:"Bryan Lively",email:"blively@fusionacademy.com"},{role:"CLO",name:"Jennifer DeLessio",email:"jdelessio@fusionacademy.com"}]},
-  {id:23,name:"SunSource",cat:"Industrial",locs:236,rev:"$2B+",hq:"Addison, IL",problems:["Lease Admin","Acquisition Support","Portfolio Audit"],problem:"PE-backed (CD&R) with high acquisition pace. CEO is decision maker. Rent overpayment risk from acquired leases.",contacts:[{role:"EVP Biz Dev",name:"James Slone",email:"jsloan@sunsrce.com"}]},
-  {id:24,name:"Pace Analytical",cat:"Professional",locs:129,rev:"$661M+",hq:"Minneapolis, MN",problems:["Site Selection","Acquisition Support","Lease Admin"],problem:"PE-backed (Leonard Green), moving/expanding many facilities. CFO is decision maker. Active acquisition pace.",contacts:[{role:"CFO",name:"Michael Hausman",email:"mike.hausman@pacelabs.com"},{role:"Head Corp Dev",name:"Sarah Martin",email:"sarah.martin@pacelabs.com"}]},
-  {id:25,name:"Konica Minolta USA",cat:"Professional",locs:158,rev:"$2.1B+",hq:"Ramsey, NJ",problems:["Rightsizing","Consolidation","Lease Admin"],problem:"Cutting costs and rightsizing underperforming locations. Consolidation play for clusters.",contacts:[{role:"CEO",name:"Sam Errigo",email:"serrigo@kmbs.konicaminolta.us"},{role:"EVP Strategy",name:"Toshi Takagi",email:"ttakagi@kmbs.konicaminolta.us"}]},
-  {id:26,name:"PepsiCo",cat:"Distribution",locs:873,rev:"$91.8B+",hq:"Purchase, NY",problems:["MBE Advantage","CAM Audit","Bill Pay"],problem:"Large leased portfolio. Cresa reps them. MBE status and JP Morgan Bill Pay are the differentiators.",contacts:[{role:"Chairman & CEO",name:"Ramon Laguarta",email:""}]},
-  {id:27,name:"MillerKnoll",cat:"Professional",locs:129,rev:"$3.8B+",hq:"Zeeland, MI",problems:["Portfolio Audit","Rightsizing","Site Selection"],problem:"Post-merger portfolio. Uses C&W. Office furniture demand recovering. Rightsizing opportunities.",contacts:[{role:"CEO",name:"Andi Owen",email:""}]},
-  {id:28,name:"Gemaire (Watsco)",cat:"Distribution",locs:99,rev:"$363M+",hq:"Deerfield Beach, FL",problems:["Lease Admin","Acquisition Support","De Novo Expansion"],problem:"HVAC distributor subsidiary of Watsco. Cold outreach. Expanding into new markets.",contacts:[{role:"President",name:"Zachary Linde",email:"zlinde@gemaire.com"}]},
-  {id:29,name:"Farmer Brothers",cat:"Distribution",locs:98,rev:"$337M+",hq:"Fort Worth, TX",problems:["Acquisition Support","Rightsizing","Lease Admin"],problem:"Pending acquisition by Royal Cup. Pre-acquisition lease admin and rightsizing extremely time-sensitive.",contacts:[{role:"VP Gen Counsel",name:"Jared Vitemb",email:"jvitemb@farmerbros.com"}]},
-  {id:30,name:"loanDepot",cat:"Professional",locs:135,rev:"$1.2B+",hq:"Irvine, CA",problems:["Consolidation","Rightsizing","Lease Admin"],problem:"Reducing admin costs with founder/CEO back and new cost-reduction strategy underway.",contacts:[{role:"CFO",name:"David Hayes",email:"dhayes@loandepot.com"}]},
-  {id:31,name:"Element Materials Tech",cat:"Professional",locs:270,rev:"$2.4B+",hq:"London, UK",problems:["MBE Advantage","International","Lease Admin"],problem:"Global TIC platform. Avison Young reps them. Mohr differentiators: tenant rep only, India-based lease admin, Bill Pay, CDN Global.",contacts:[{role:"CEO",name:"Jo Wetz",email:"jowetz@element.com"},{role:"EVP Americas",name:"Rick Sluiters",email:"rick.sluiters@element.com"}]},
-  {id:32,name:"Gruma (Mission Foods)",cat:"Distribution",locs:75,rev:"$6.3B+",hq:"San Pedro Garza, MX",problems:["International","Lease Admin","Site Selection"],problem:"Global food manufacturer with US and intl facilities. Mohr Mexico + Europe capability is key differentiator.",contacts:[{role:"CFO",name:"Alejandro Solis",email:""}]},
-  {id:33,name:"Team Inc.",cat:"Industrial",locs:220,rev:"$896M+",hq:"Sugar Land, TX",problems:["Lease Admin","International","Acquisition Support"],problem:"Industrial services across 20+ countries. New CEO focused on restructuring. International partnerships align.",contacts:[{role:"CEO",name:"Gary Hill",email:"gary.hill@teaminc.com"}]},
-  {id:34,name:"MISTRAS Group",cat:"Industrial",locs:120,rev:"$724M+",hq:"Princeton Jct, NJ",problems:["Lease Admin","International","Acquisition Support"],problem:"Industrial inspection properties internationally. New CEO. International presence aligns with CDN/Carter Jonas.",contacts:[{role:"CEO",name:"Natalia Shuman",email:"natalia.shuman@mistrasgroup.com"},{role:"CFO",name:"Edward Prajzner",email:"edward.prajzner@mistrasgroup.com"}]},
-  {id:35,name:"ManTech",cat:"Professional",locs:41,rev:"$2.2B+",hq:"Herndon, VA",problems:["MBE Advantage","Consolidation","Site Selection"],problem:"Carlyle-backed defense IT. Mohr MBE status critical for government contractors. Dense DC-area cluster.",contacts:[{role:"CFO",name:"Michael Ruppert",email:"michael.ruppert@mantech.com"}]},
-  {id:36,name:"Integrated Power Services",cat:"Industrial",locs:115,rev:"$482M+",hq:"Greenville, SC",problems:["Acquisition Support","Sale Leaseback","Lease Admin"],problem:"PE-backed (Searchlight) with high-volume acquisitions. New CCO. Sale-leaseback and lease assimilation play.",contacts:[{role:"CEO",name:"John Zuleger",email:"jzuleger@ips.us"},{role:"CCO",name:"Hannah Kaplan",email:"hannah.kaplan@ips.us"}]},
-  {id:37,name:"Leidos",cat:"Professional",locs:179,rev:"$14.4B+",hq:"Reston, VA",problems:["MBE Advantage","Portfolio Audit","Lease Admin"],problem:"Large government IT firm with recent major acquisition. MBE status differentiator for federal contractors.",contacts:[{role:"CEO",name:"Tom Bell",email:"tom.bell@leidos.com"},{role:"CFO",name:"Chris Cage",email:"christopher.r.cage@leidos.com"}]},
-  {id:38,name:"Aprio",cat:"Professional",locs:33,rev:"$485M+",hq:"Atlanta, GA",problems:["Portfolio Audit","Rightsizing","Acquisition Support"],problem:"PE-backed accounting firm with active acquisition pace. Rightsizing and BI for CDO.",contacts:[{role:"CEO",name:"Richard Kopelman",email:"richard.kopelman@aprio.com"},{role:"CFO",name:"Adam Rimes",email:"adam.rimes@aprio.com"}]},
-  {id:39,name:"ICBD Holdings (ABA Centers)",cat:"Healthcare",locs:44,rev:"$50M+",hq:"Fort Lauderdale, FL",problems:["De Novo Expansion","Lease Admin","Site Selection"],problem:"Aggressive de novo expansion. Chief Growth Officer has RE background. Ongoing site selection need.",contacts:[{role:"Chief Growth Officer",name:"Ryan Lindgren",email:""}]},
-  {id:40,name:"Acorn Health",cat:"Healthcare",locs:70,rev:"$100M+",hq:"Coral Gables, FL",problems:["Lease Admin","Acquisition Support","Site Selection"],problem:"PE-backed autism ABA growing via acquisitions. Lease admin for acquired portfolios and BI for new markets.",contacts:[{role:"CFO",name:"Don Borchert",email:""},{role:"SVP Operations",name:"Rachel Gossan",email:"ragossan@acornhealth.com"}]},
-  {id:41,name:"Soar Autism Center",cat:"Healthcare",locs:37,rev:"$50M+",hq:"Denver, CO",problems:["Site Selection","Lease Admin","De Novo Expansion"],problem:"Early-stage autism care with CHOP partnership. Recent leadership change — good timing for outreach.",contacts:[{role:"Co-Founder & CEO",name:"Ian Goldstein",email:""},{role:"Co-Founder",name:"Jennifer Goldstein",email:"jennifer.goldstein@soarautismcenter.com"}]},
-  {id:42,name:"Howden Group Holdings",cat:"Professional",locs:400,rev:"$20B+",hq:"London, UK",problems:["International","Bill Pay","Lease Admin"],problem:"Employee-owned global insurance with offices worldwide. Mohr international capability is key differentiator.",contacts:[{role:"HQ Contact",name:"Howden Group",email:""}]},
-  {id:43,name:"USA Vein Clinics",cat:"Healthcare",locs:168,rev:"$48.9M+",hq:"Northbrook, IL",problems:["Lease Admin","Site Selection","Rightsizing"],problem:"Founder-owned vein/vascular platform with clinics across multiple specialty lines.",contacts:[{role:"Founder & CEO",name:"Dr. Yan Katsnelson",email:"ykatsnelson@usaveinclinics.com"}]},
-  {id:44,name:"Gastro Health",cat:"Healthcare",locs:209,rev:"$71M+",hq:"Miami, FL",problems:["Lease Admin","Acquisition Support","Site Selection"],problem:"PE-backed GI platform with active expansion. Lease admin for new practices and BI for patient concentration.",contacts:[{role:"CEO",name:"Alan Oliver",email:"aoliver@gastrohealth.com"}]},
-  {id:45,name:"Women's Care",cat:"Healthcare",locs:100,rev:"$563M+",hq:"Tampa, FL",problems:["Lease Admin","Acquisition Support","Site Selection"],problem:"PE-backed OB/GYN with acquisition-driven growth into new states.",contacts:[{role:"COO",name:"Krista Christensen",email:""}]},
-  {id:46,name:"Pritchard Industries",cat:"Industrial",locs:53,rev:"$3.8B+",hq:"New York, NY",problems:["Lease Admin","Acquisition Support","Site Selection"],problem:"PE-backed facility services. Recent acquisition and new leadership team.",contacts:[{role:"CEO",name:"Erin Meehan",email:"emeehan@pritchardindustries.com"}]},
-  {id:47,name:"DECA Dental (Ideal Dental)",cat:"Healthcare",locs:200,rev:"$87M+",hq:"Dallas, TX",problems:["De Novo Expansion","Lease Admin","Site Selection"],problem:"Blackstone-backed DSO. JV program active. De novo site selection and lease admin at scale.",contacts:[{role:"Founder & CEO",name:"Dr. Sulman Ahmed",email:""}]},
-  {id:48,name:"Action Behavior Centers",cat:"Healthcare",locs:450,rev:"$2.1B+",hq:"Austin, TX",problems:["De Novo Expansion","Lease Admin","Site Selection"],problem:"PE-backed ABA therapy leader. Primarily de novo. Childcare zoning makes site selection complex.",contacts:[{role:"Co-Founder",name:"Holly Lambert",email:""}]},
-  {id:49,name:"Metro Vein Centers",cat:"Healthcare",locs:60,rev:"$80.7M",hq:"New York, NY",problems:["De Novo Expansion","Lease Admin","Site Selection"],problem:"Targeting aggressive clinic growth. New CEO. Technical medical buildouts make site selection complex.",contacts:[{role:"CEO",name:"Andrew Provost",email:"andrew@metroveincenters.com"},{role:"CFO",name:"Mike Wendt",email:"mwendt@metroveincenters.com"}]},
-  {id:50,name:"Unified Women's Healthcare",cat:"Healthcare",locs:925,rev:"$1.4B+",hq:"Tampa, FL",problems:["Lease Admin","Portfolio Audit","Acquisition Support"],problem:"Largest OB/GYN MSO. Each acquisition adds new lease portfolio. Massive ongoing lease admin opportunity.",contacts:[{role:"CEO",name:"David Young",email:""},{role:"Exec Chairman",name:"Paul Kusserow",email:""}]}
+  {id:1,name:"Arise Industrial",cat:"Industrial",locs:4,rev:"$6.5M+",hq:"Columbus, OH",problems:["Portfolio Audit","Acquisition Support","Lease Admin"],problem:"Early-stage manufacturing PE platform. Portfolio audit and rightsizing as acquisitions grow.",contacts:[{role:"Co-Founder",name:"Andrew J. Billman",email:"Andy.Billman@ariseindustrial.com",phone:"(810) 241-7316"},{role:"Co-Founder & Chief Executive Officer",name:"Zachary Guisinger",email:"Zac.Guisinger@ariseindustrial.com",phone:"(614) 840-4376"},{role:"Chief Operating Officer",name:"Shaun Pressly",email:""},{role:"Chief Financial Officer",name:"Doug Wisel",email:"doug.wisel@ariseindustrial.com",phone:"(610) 301-8640"}]},
+  {id:3,name:"SRS Distribution",cat:"Distribution",locs:760,rev:"$2.2B+",hq:"McKinney, TX",problems:["Lease Admin","CAM Audit","Acquisition Support"],problem:"Home Depot subsidiary with major acquisitions in progress. Large multi-brand portfolio needs CAM audits and lease admin. JLL reps them.",contacts:[{role:"President & Chief Executive Officer",name:"Daniel R. Tinker",email:"dtinker@srsdistribution.com",phone:"(972) 547-0537"},{role:"Chief Financial Officer",name:"Ryan Nelson",email:"rnelson@srsdistribution.com"},{role:"Chief Development Officer",name:"Alfred Litchenburg",email:"al.litchenburg@srsdistribution.com",phone:"(214) 226-7195"},{role:"General Counsel",name:"Dustin Gunderson",email:"dustin.gunderson@srsdistribution.com",phone:"(469) 421-0926"}]},
+  {id:4,name:"Crane Worldwide Logistics",cat:"Logistics",locs:130,rev:"$3.3B+",hq:"Houston, TX",problems:["Bill Pay","Lease Admin","International"],problem:"Privately held global 3PL with international expansion ongoing. No main tenant rep identified — Bill Pay and lease admin are strong wedge.",contacts:[{role:"Chief Executive Officer",name:"Jared Crane",email:"jared.crane@craneww.com",phone:"(281) 233-9540"},{role:"Chief Financial Officer",name:"Michelle Ford",email:"mford@craneww.com",phone:"(346) 642-6475"},{role:"General Counsel",name:"Tanya White",email:""}]},
+  {id:5,name:"Builders FirstSource",cat:"Distribution",locs:649,rev:"$15.2B+",hq:"Irving, TX",problems:["Rightsizing","CAM Audit","Consolidation"],problem:"Multiple facility consolidations underway. Revenue declining — rightsizing and CAM audits timely. Uses Colliers.",contacts:[{role:"President & Chief Executive Officer",name:"Peter Jackson",email:""},{role:"Chief Operating Officer",name:"Steve Herron",email:""},{role:"Chief Financial Officer",name:"Pete Beckmann",email:"peter.beckmann@bldr.com"},{role:"Portfolio Manager, Real Estate",name:"Travis J. Endres",email:"travis.endres@bldr.com",phone:"(214) 231-6398"},{role:"Senior Vice President, Chief Accounting Officer",name:"Jami Beckmann",email:"jami.beckmann@bldr.com",phone:"(425) 891-0457"}]},
+  {id:6,name:"Marcone (mSupply)",cat:"Distribution",locs:154,rev:"$148M+",hq:"Creve Coeur, MO",problems:["Lease Admin","Portfolio Audit","Acquisition Support"],problem:"PE-backed (Genstar) roll-up with high risk of overpaying rent from acquired leases.",contacts:[{role:"Chief Executive Officer",name:"Asterios Satrazemis",email:""},{role:"Chief Financial Officer",name:"Raymond Andrews",email:"",phone:"(508) 450-2734"}]},
+  {id:7,name:"Uline",cat:"Distribution",locs:43,rev:"$3.6B+",hq:"Pleasant Prairie, WI",problems:["Sale Leaseback","Bill Pay","Project Mgmt"],problem:"Expanding aggressively with large-scale leased facilities at mega-scale.",contacts:[{role:"Vice President",name:"Steve Uihlein",email:"suihlein@uline.com",phone:"(262) 612-4200"}]},
+  {id:8,name:"Maxim Crane Works",cat:"Industrial",locs:57,rev:"$902M+",hq:"Canonsburg, PA",problems:["Acquisition Support","Lease Admin","Sale Leaseback"],problem:"High acquisition pace. New COO recently. Lease assimilation and sale-leaseback are the play.",contacts:[{role:"Chief Executive Officer",name:"Paul I. McDonnell",email:"p.mcdonnell@maximcrane.com",phone:"(510) 760-9723"},{role:"Chief Financial Officer",name:"Sean Collopy",email:"",phone:"(859) 442-6312"},{role:"Chief Operating Officer",name:"Larry Lis",email:"llis@maximcrane.com"}]},
+  {id:9,name:"84 Lumber",cat:"Distribution",locs:320,rev:"$7B+",hq:"Eighty Four, PA",problems:["Bill Pay","Lease Admin","Site Selection"],problem:"Private, expanding westward. Uses C&W occasionally. Bill Pay and lease admin wedge.",contacts:[{role:"CEO",name:"Maggie Hardy",email:"",phone:"(724) 329-6194"},{role:"Chief Operating Officer",name:"Frank S. Cicero",email:"frank.cicero@84lumber.com"},{role:"Chief Financial Officer",name:"Paul J. Lentz",email:"",phone:"(724) 228-8820"},{role:"General Counsel",name:"Dave Morgan",email:"dave.morgan@84lumber.com",phone:"(724) 228-8820"}]},
+  {id:11,name:"Clean Earth",cat:"Industrial",locs:72,rev:"$1.2B+",hq:"King of Prussia, PA",problems:["Acquisition Support","Lease Admin","Rightsizing"],problem:"Pending acquisition by Veolia. Pre-acquisition lease admin, rightsizing, and portfolio audit are highly timely.",contacts:[{role:"President",name:"Jeff Beswick",email:"jbeswick@cleanearthinc.com",phone:"(219) 682-6055"},{role:"Chief Commercial Officer",name:"Elizabeth Peterson",email:"epeterson@cleanearthinc.com"},{role:"Chief Financial Officer",name:"Michael Polcovich",email:"mpolcovich@cleanearthinc.com",phone:"(717) 763-7064"},{role:"Vice President, Division General Counsel",name:"Sarah Kowalczyk",email:"skowalczyk@cleanearthinc.com",phone:"(215) 734-1400"}]},
+  {id:12,name:"CBIZ",cat:"Professional",locs:320,rev:"$2.8B+",hq:"Independence, OH",problems:["Portfolio Audit","Rightsizing","Lease Admin"],problem:"Post-Marcum acquisition. Lease assimilation and rightsizing directly applicable.",contacts:[{role:"President & CEO",name:"Jerry Grisko",email:"jgrisko@cbiz.com",phone:"(216) 525-1999"},{role:"Senior Vice President, Chief Information Officer",name:"John Fleischer",email:"jfleischer@cbiz.com"},{role:"President, Chief Legal Officer and Corporate",name:"Jaileah “Leah” Huddleston",email:"jhuddleston@cbiz.com",phone:"(502) 774-6662"},{role:"Senior Vice President, Chief Financial Officer",name:"Brad Lakhia",email:"brad.lakhia@cbiz.com",phone:"(330) 524-9924"},{role:"Senior Vice President, Corporate Development",name:"Matt Morelli",email:"mmorelli@cbiz.com",phone:"(216) 447-9007"}]},
+  {id:13,name:"BlueLinx",cat:"Distribution",locs:60,rev:"$3B+",hq:"Marietta, GA",problems:["De Novo Expansion","Sale Leaseback","Lease Admin"],problem:"New greenfield branches. Evaluating new markets. History of sale-leasebacks.",contacts:[{role:"President & CEO",name:"Shyam Reddy",email:"shyam.reddy@bluelinxco.com",phone:"(705) 728-7141"},{role:"Chief Commercial Officer",name:"Leo Oei",email:"leo.oei@bluelinxco.com",phone:"(405) 659-5361"},{role:"Chief Financial Officer and Treasurer",name:"Kelly Wall",email:"kelly.wall@bluelinxco.com",phone:"(916) 969-0455"}]},
+  {id:14,name:"Alta Equipment Group",cat:"Industrial",locs:80,rev:"$1.8B+",hq:"Livonia, MI",problems:["Lease Admin","Acquisition Support","De Novo Expansion"],problem:"High acquisition pace. Expanding into new geographies. Lease admin and greenfield selection.",contacts:[{role:"Chief Executive Officer",name:"Ryan Greenawalt",email:"ryan@altg.com",phone:"(734) 780-4005"},{role:"Chief Financial Officer",name:"Anthony Colucci",email:"tony.colucci@altaequipment.com",phone:"(586) 362-4561"},{role:"Chief Legal Officer & General Counsel",name:"Jeffrey Hoover",email:"jeff.hoover@altaequipment.com",phone:"(734) 718-1745"}]},
+  {id:15,name:"BrightView",cat:"Industrial",locs:191,rev:"$2.7B+",hq:"Blue Bell, PA",problems:["Lease Admin","Rightsizing","Consolidation"],problem:"Revenue declining. Divested franchise. Many leased branches at short avg terms.",contacts:[{role:"President and Chief Executive Officer",name:"Dale Asplund",email:"dale.asplund@brightview.com"},{role:"Executive Vice President, Chief Financial Officer",name:"Brett Urban",email:"brett-urban@brightview.com",phone:"(484) 684-7794"},{role:"President, Chief Legal Officer and Corporate",name:"Jonathan M. Gottsegen",email:"jonathan.gottsegen@brightview.com",phone:"(203) 918-7105"},{role:"Executive Vice President, Chief Commercial Officer",name:"Michael Dozier",email:"michael.dozier@brightview.com",phone:"(678) 992-3628"}]},
+  {id:16,name:"Medrite Urgent Care",cat:"Healthcare",locs:24,rev:"$200M+",hq:"New York, NY",problems:["De Novo Expansion","CAM Audit","Consolidation"],problem:"Medtail platform expanding into new markets. Dense NYC footprint may have consolidation opportunities.",contacts:[{role:"Founder and CEO",name:"Samuel Fisch",email:"sfisch@medrite.com",phone:"(212) 826-3377"},{role:"Chief Growth Officer/Executive Board Member",name:"William Miller",email:""},{role:"Director of Operations/Chief Compliance Officer",name:"Nina Isola",email:"nisola@medrite.com",phone:"(212) 695-4444"}]},
+  {id:17,name:"Fast Pace Health",cat:"Healthcare",locs:228,rev:"$366M+",hq:"Franklin, TN",problems:["Site Selection","CAM Audit","Lease Admin"],problem:"PE-backed large rural clinic network expanding into new states. Long-term NNN leases are a major CAM audit opportunity.",contacts:[{role:"President & Chief Executive Officer",name:"Gregory Steil",email:"greg.steil@fastpacehealth.com",phone:"(615) 988-1635"},{role:"Chief Financial Officer",name:"Randall D. Overton",email:"randy.overton@fastpacehealth.com",phone:"(615) 584-3260"},{role:"Chief Operations Officer",name:"Jason Hafner",email:"jason.hafner@fastpacehealth.com",phone:"(815) 258-9346"},{role:"Chief Revenue Officer",name:"Alan D. Douglas",email:"alan.douglas@fastpacehealth.com",phone:"(615) 438-4240"}]},
+  {id:18,name:"American Heart Association",cat:"Professional",locs:85,rev:"$1.3B+",hq:"Dallas, TX",problems:["Lease Admin","Site Selection","Consolidation"],problem:"Nonprofit HQ Dallas with many leased locations nationwide. Recent consolidation activity signals strategic planning.",contacts:[{role:"Chief Executive Officer",name:"Nancy Brown",email:"nancy.brown@heart.org"},{role:"Chief Operating Officer",name:"Suzie Upton",email:"suzieu@heart.org",phone:"(214) 706-1344"},{role:"Chief Financial Officer",name:"Cynthia J. Roberts",email:"cyndi.roberts@heart.org",phone:"(214) 706-1370"}]},
+  {id:19,name:"Smile Partners",cat:"Healthcare",locs:124,rev:"$190M+",hq:"Troy, MI",problems:["De Novo Expansion","Lease Admin","Acquisition Support"],problem:"PE-backed DSO with new continuation fund. Shifting to greenfield de novo alongside acquisitions.",contacts:[{role:"Chief Executive Officer",name:"David Gaspar",email:"dgaspar@smilepartnersusa.com"},{role:"Chief Financial Officer",name:"Shawn Lynch",email:""},{role:"Chief Operating Officer",name:"Patrick Perodin",email:"",phone:"(410) 300-8166"},{role:"Chief Development Officer",name:"Nathan Cox",email:"nathan.cox@smilepartnersusa.com",phone:"(256) 924-6303"}]},
+  {id:20,name:"US Specialists Management",cat:"Healthcare",locs:108,rev:"N/A",hq:"Fort Worth, TX",problems:["Lease Admin","CAM Audit","Acquisition Support"],problem:"Physician MSO with rapid acquisition pace. High rent overpayment risk from acquired leases. CEO connection.",contacts:[{role:"Chief Executive Officer",name:"Robert Yonke",email:"bob.yonke@ussm.com",phone:"(913) 957-0132"},{role:"President & Chief Operating Officer",name:"Michael W. Bukosky",email:"mike.bukosky@ussm.com",phone:"(469) 400-8229"},{role:"Chief Financial Officer (Corporate)",name:"Joseph Minissale",email:"joe.minissale@ussm.com",phone:"(405) 641-1630"},{role:"Chief Financial Officer (Clinical Services)",name:"Robert J. Firlit",email:"robert.firlit@ussm.com",phone:"(708) 945-2249"},{role:"Chief Operating Officer",name:"Kevin R. Bentley",email:"",phone:"(817) 925-8460"}]},
+  {id:21,name:"Forward Air",cat:"Logistics",locs:128,rev:"$2.5B+",hq:"Coppell, TX",problems:["Rightsizing","Lease Admin","Consolidation"],problem:"Post-acquisition integration with terminal consolidation underway. Board reviewed strategic alternatives. Lease rightsizing urgent.",contacts:[{role:"Chief Executive Officer & President",name:"Shawn L. Stewart",email:"shawn.stewart@forwardair.com",phone:"(214) 966-4632"},{role:"Chief Financial Officer",name:"Jamie Pierson",email:"jpierson@forwardair.com"},{role:"Chief Legal Officer",name:"Michael L. Hance",email:"michael_hance@forwardair.com",phone:"(423) 636-7007"},{role:"Chief Commercial Officer",name:"Eric Brandt",email:"ebrandt@forwardair.com",phone:"(201) 741-2773"}]},
+  {id:22,name:"Fusion Academy",cat:"Healthcare",locs:82,rev:"$314M+",hq:"Grand Rapids, MI",problems:["Site Selection","Lease Admin","Consolidation"],problem:"Private K-12 in high-income submarkets. JLL reps them. Expanding to new campuses.",contacts:[{role:"Chief Executive Officer",name:"Bryan Lively",email:"blively@fusionacademy.com",phone:"(248) 705-3956"},{role:"Chief Financial Officer",name:"David G. Martin",email:"",phone:"(616) 301-1221"},{role:"Chief Legal & Compliance Officer",name:"Jennifer DeLessio",email:"jdelessio@fusionacademy.com",phone:"(616) 301-1221"}]},
+  {id:23,name:"SunSource",cat:"Industrial",locs:236,rev:"$2B+",hq:"Addison, IL",problems:["Lease Admin","Acquisition Support","Portfolio Audit"],problem:"PE-backed (CD&R) with high acquisition pace. CEO is decision maker. Rent overpayment risk from acquired leases.",contacts:[{role:"President & CEO",name:"David Sacher",email:""},{role:"Chief Financial Officer",name:"Chuck Freeman",email:""},{role:"Executive Vice President, Business Development",name:"James Slone",email:"jsloan@sunsrce.com",phone:"(888) 786-7723"},{role:"Vice President, Operations",name:"Charles Kern",email:"ckern@sunsrce.com",phone:"(262) 412-5038"}]},
+  {id:24,name:"Pace Analytical",cat:"Professional",locs:129,rev:"$661M+",hq:"Minneapolis, MN",problems:["Site Selection","Acquisition Support","Lease Admin"],problem:"PE-backed (Leonard Green), moving/expanding many facilities. CFO is decision maker. Active acquisition pace.",contacts:[{role:"President & CEO",name:"Ken Beyer",email:""},{role:"Chief Financial Officer",name:"Michael J. Hausman",email:"mike.hausman@pacelabs.com"},{role:"Head of Corporate Development",name:"Sarah Martin",email:"sarah.martin@pacelabs.com",phone:"(646) 498-1154"}]},
+  {id:25,name:"Konica Minolta USA",cat:"Professional",locs:158,rev:"$2.1B+",hq:"Ramsey, NJ",problems:["Rightsizing","Consolidation","Lease Admin"],problem:"Cutting costs and rightsizing underperforming locations. Consolidation play for clusters.",contacts:[{role:"President & Chief Executive Officer",name:"Sam Errigo",email:"serrigo@kmbs.konicaminolta.us",phone:"(727) 510-5623"},{role:"President, Strategic Business Planning and De",name:"Toshi Takagi",email:"ttakagi@kmbs.konicaminolta.us",phone:"(551) 264-6312"},{role:"Chief Operating Officer & Executive Vice President",name:"Michael J. Mathe",email:"mmathe@kmbs.konicaminolta.us",phone:"(845) 987-4554"},{role:"Chief Financial Officer & Executive VP",name:"Holly DeSantis",email:"hdesantis@kmbs.konicaminolta.us",phone:"(201) 818-3287"},{role:"Senior Vice President and General Counsel",name:"Stephen F. Herbes",email:"sherbes@kmbs.konicaminolta.us",phone:"(201) 236-4364"}]},
+  {id:26,name:"PepsiCo",cat:"Distribution",locs:873,rev:"$91.8B+",hq:"Purchase, NY",problems:["MBE Advantage","CAM Audit","Bill Pay"],problem:"Large leased portfolio. Cresa reps them. MBE status and JP Morgan Bill Pay are the differentiators.",contacts:[{role:"Chairman and Chief Executive Officer",name:"Ramon L. Laguarta",email:""},{role:"Chief Executive Officer, Latin America Foods",name:"Athina Kanioura",email:"athina.kanioura@pepsico.com",phone:"(914) 954-0818"},{role:"Senior Vice President, Controller",name:"Christine Tammara",email:"christine.tammara@pepsico.com",phone:"(914) 253-2941"},{role:"President, General Counsel and Corporate Secr",name:"David Flavell",email:"davidr.flavell@pepsico.com",phone:"(914) 253-2483"},{role:"Executive Vice President, Chief Financial Officer",name:"Steve Schmitt",email:"",phone:"(631) 243-6341"}]},
+  {id:27,name:"MillerKnoll",cat:"Professional",locs:129,rev:"$3.8B+",hq:"Zeeland, MI",problems:["Portfolio Audit","Rightsizing","Site Selection"],problem:"Post-merger portfolio. Uses C&W. Office furniture demand recovering. Rightsizing opportunities.",contacts:[{role:"CEO",name:"Andi Owen",email:"",phone:"(415) 987-5843"},{role:"Chief Legal Officer & Corporate Secretary",name:"Jackie Rice",email:"jackie_rice@millerknoll.com",phone:"(312) 848-2809"},{role:"Chief Operating Officer",name:"Jeff Stutz",email:""},{role:"Chief Financial Officer",name:"Kevin Veltman",email:"kevin_veltman@millerknoll.com",phone:"(616) 654-3973"}]},
+  {id:28,name:"Gemaire (Watsco)",cat:"Distribution",locs:99,rev:"$363M+",hq:"Deerfield Beach, FL",problems:["Lease Admin","Acquisition Support","De Novo Expansion"],problem:"HVAC distributor subsidiary of Watsco. Cold outreach. Expanding into new markets.",contacts:[{role:"President",name:"Zachary Linde",email:"zlinde@gemaire.com",phone:"(612) 251-7157"},{role:"Chairman & Chief Executive Officer (at Watsco)",name:"Albert H. Nahmad",email:"anahmad@watsco.com",phone:"(305) 799-3790"},{role:"Chief Financial Officer",name:"Ana M. Menendez",email:""}]},
+  {id:29,name:"Farmer Brothers",cat:"Distribution",locs:98,rev:"$337M+",hq:"Fort Worth, TX",problems:["Acquisition Support","Rightsizing","Lease Admin"],problem:"Pending acquisition by Royal Cup. Pre-acquisition lease admin and rightsizing extremely time-sensitive.",contacts:[{role:"President, Chief Executive Officer, Director",name:"John Moore",email:""},{role:"Chief Financial Officer",name:"Vance Fisher",email:"",phone:"(469) 680-3768"},{role:"Vice President, General Counsel",name:"Jared Vitemb",email:"jvitemb@farmerbros.com",phone:"(682) 549-6670"}]},
+  {id:30,name:"loanDepot",cat:"Professional",locs:135,rev:"$1.2B+",hq:"Irvine, CA",problems:["Consolidation","Rightsizing","Lease Admin"],problem:"Reducing admin costs with founder/CEO back and new cost-reduction strategy underway.",contacts:[{role:"Founder and CEO",name:"Anthony Hsieh",email:""},{role:"Chief Financial Officer",name:"David Hayes",email:"dhayes@loandepot.com",phone:"(310) 344-9773"},{role:"Chief Strategy Officer",name:"Rick Calle",email:""},{role:"Chief Accounting Officer",name:"Darren Graeler",email:"dgraeler@loandepot.com",phone:"(949) 680-1679"},{role:"Chief Growth Officer",name:"Nikul Patel",email:"nikulpatel@loandepot.com"},{role:"Chief Legal Officer, Corporate Secretary",name:"Gregg Smallwood",email:"gsmallwood@loandepot.com",phone:"(949) 629-7991"}]},
+  {id:31,name:"Element Materials Tech",cat:"Professional",locs:270,rev:"$2.4B+",hq:"London, UK",problems:["MBE Advantage","International","Lease Admin"],problem:"Global TIC platform. Avison Young reps them. Mohr differentiators: tenant rep only, India-based lease admin, Bill Pay, CDN Global.",contacts:[{role:"Chief Executive Officer",name:"Jo Wetz",email:"jowetz@element.com"},{role:"Chief Financial Officer",name:"Paul Woolf",email:""},{role:"EVP, Americas",name:"Rick Sluiters",email:"rick.sluiters@element.com",phone:"(561) 277-3116"},{role:"Group General Counsel",name:"Trudy Cooke",email:"trudy.cooke@element.com"}]},
+  {id:32,name:"Gruma (Mission Foods)",cat:"Distribution",locs:75,rev:"$6.3B+",hq:"San Pedro Garza, MX",problems:["International","Lease Admin","Site Selection"],problem:"Global food manufacturer with US and intl facilities. Mohr Mexico + Europe capability is key differentiator.",contacts:[{role:"Chief Executive Officer of GRUMA",name:"Juan Antonio González Moreno",email:""},{role:"Chief Administrative Officer",name:"Homero Huerta Moreno",email:"homero_huerta@gruma.com",phone:"714 582 9768"},{role:"Chief Financial Officer",name:"Alejandro Solis",email:"asolis@gruma.com"}]},
+  {id:33,name:"Team Inc.",cat:"Industrial",locs:220,rev:"$896M+",hq:"Sugar Land, TX",problems:["Lease Admin","International","Acquisition Support"],problem:"Industrial services across 20+ countries. New CEO focused on restructuring. International partnerships align.",contacts:[{role:"Chief Executive Officer",name:"Gary L. Hill",email:"gary.hill@teaminc.com",phone:"(678) 728-9245"},{role:"Executive Vice President, Chief Financial Officer",name:"Nelson M. Haight",email:"",phone:"(281) 388-5521"},{role:"President, Chief Legal Officer and Corporate",name:"James C. Webster",email:"",phone:"(713) 449-4878"}]},
+  {id:34,name:"MISTRAS Group",cat:"Industrial",locs:120,rev:"$724M+",hq:"Princeton Jct, NJ",problems:["Lease Admin","International","Acquisition Support"],problem:"Industrial inspection properties internationally. New CEO. International presence aligns with CDN/Carter Jonas.",contacts:[{role:"Executive Chairman of the Board",name:"Manuel N. Stamatakis",email:"manny.stamatakis@mistrasgroup.com",phone:"(610) 457-8399"},{role:"President & Chief Executive Officer (CEO)",name:"Natalia Shuman",email:"natalia.shuman@mistrasgroup.com",phone:"(954) 253-3028"},{role:"Chief Financial Officer",name:"Edward J. Prajzner",email:"edward.prajzner@mistrasgroup.com",phone:"(609) 716-4102"},{role:"Chief Operating Officer",name:"Hani Hammad",email:"hani.hammad@mistrasgroup.com",phone:"(318) 294-2920"},{role:"Executive Vice President and Chief Legal Officer",name:"Eileen Coggins",email:"eileen.coggins@mistrasgroup.com",phone:"(610) 952-3921"}]},
+  {id:35,name:"ManTech",cat:"Professional",locs:41,rev:"$2.2B+",hq:"Herndon, VA",problems:["MBE Advantage","Consolidation","Site Selection"],problem:"Carlyle-backed defense IT. Mohr MBE status critical for government contractors. Dense DC-area cluster.",contacts:[{role:"CEO and President",name:"Matt Tait",email:""},{role:"Chief Financial Officer",name:"Michael Ruppert",email:"michael.ruppert@mantech.com",phone:"(202) 368-7502"},{role:"General Counsel and Corporate Secretary",name:"Jeffrey Brown",email:"",phone:"(703) 622-4141"},{role:"Chief Performance Officer",name:"Bonnie J. Cook",email:"bonnie.cook@mantech.com",phone:"(703) 814-4236"},{role:"Chief Growth Officer",name:"Joseph Cubba",email:"joseph.cubba@mantech.com",phone:"(703) 338-0343"}]},
+  {id:36,name:"Integrated Power Services",cat:"Industrial",locs:115,rev:"$482M+",hq:"Greenville, SC",problems:["Acquisition Support","Sale Leaseback","Lease Admin"],problem:"PE-backed (Searchlight) with high-volume acquisitions. New CCO. Sale-leaseback and lease assimilation play.",contacts:[{role:"President and CEO",name:"John Zuleger",email:"jzuleger@ips.us",phone:"(920) 734-9964"},{role:"Chief Financial Officer",name:"Jason Martin",email:""},{role:"Senior VP, Business Development & Chief Legal",name:"Lynleigh L. Richwine",email:"lrichwine@ips.us",phone:"(404) 483-3349"},{role:"Chief Commercial Officer",name:"Hannah Kaplan",email:"hannah.kaplan@ips.us",phone:"(202) 341-8256"}]},
+  {id:37,name:"Leidos",cat:"Professional",locs:179,rev:"$14.4B+",hq:"Reston, VA",problems:["MBE Advantage","Portfolio Audit","Lease Admin"],problem:"Large government IT firm with recent major acquisition. MBE status differentiator for federal contractors.",contacts:[{role:"Chief Executive Officer",name:"Thomas Bell",email:"tom.bell@leidos.com",phone:"(314) 704-4344"},{role:"Chief Growth Officer",name:"Jason Albanese",email:"jason.b.albanese@leidos.com",phone:"(571) 526-7688"},{role:"General Counsel",name:"Dan Antal",email:""},{role:"Chief Financial Officer",name:"Chris Cage",email:"christopher.r.cage@leidos.com",phone:"(323) 201-1543"}]},
+  {id:38,name:"Aprio",cat:"Professional",locs:33,rev:"$485M+",hq:"Atlanta, GA",problems:["Portfolio Audit","Rightsizing","Acquisition Support"],problem:"PE-backed accounting firm with active acquisition pace. Rightsizing and BI for CDO.",contacts:[{role:"CEO",name:"Richard Kopelman, CPA, CGMA",email:"richard.kopelman@aprio.com",phone:"(404) 898-8236"},{role:"Chief Financial Officer | Partner",name:"Adam Rimes, CPA",email:"adam.rimes@aprio.com",phone:"(770) 353-3176"},{role:"Chief Corporate Development Officer",name:"Alex Gajewski",email:"alexander.gajewski@aprio.com",phone:"(336) 719-6330"},{role:"Chief Growth Officer, Partner",name:"Cheri Husney",email:"cheri.husney@aprio.com",phone:"(770) 353-4779"},{role:"Chief Risk Officer, General Counsel, Partner",name:"Laura Walker",email:"",phone:"(770) 353-5347"},{role:"Chief Operating Officer & Partner",name:"Matthew Wise",email:"matt.wise@aprio.com",phone:"(770) 353-3109"}]},
+  {id:39,name:"ICBD Holdings (ABA Centers)",cat:"Healthcare",locs:44,rev:"$50M+",hq:"Fort Lauderdale, FL",problems:["De Novo Expansion","Lease Admin","Site Selection"],problem:"Aggressive de novo expansion. Chief Growth Officer has RE background. Ongoing site selection need.",contacts:[{role:"Founder and Chairman",name:"Christopher Barnett",email:""},{role:"Chief Executive Officer",name:"Jason Barker, MHA",email:"",phone:"(647) 222-9365"},{role:"Chief Legal Officer",name:"Kristy Johnson",email:"",phone:"(305) 213-5328"},{role:"Chief Growth Officer",name:"Ryan Lindgren, MBA",email:"rlindgren@abacenters.com",phone:"(404) 718-9660"}]},
+  {id:40,name:"Acorn Health",cat:"Healthcare",locs:70,rev:"$100M+",hq:"Coral Gables, FL",problems:["Lease Admin","Acquisition Support","Site Selection"],problem:"PE-backed autism ABA growing via acquisitions. Lease admin for acquired portfolios and BI for new markets.",contacts:[{role:"President and Chief Executive Officer",name:"Mony Iyer",email:""},{role:"President of Growth and Chief Clinical Office",name:"Krista Orellana , M.A., BCBA",email:""},{role:"Senior Vice President, Operations",name:"Rachel Gossan",email:"ragossan@acornhealth.com",phone:"(616) 608-3665"},{role:"Chief Financial Officer",name:"Don Borchert",email:"dborchert@acornhealth.com",phone:"(469) 363-3422"},{role:"Founder and Board Chair",name:"Vicki Kroviak",email:"vkroviak@acornhealth.com",phone:"(914) 330-2144"}]},
+  {id:41,name:"Soar Autism Center",cat:"Healthcare",locs:37,rev:"$50M+",hq:"Denver, CO",problems:["Site Selection","Lease Admin","De Novo Expansion"],problem:"Early-stage autism care with CHOP partnership. Recent leadership change — good timing for outreach.",contacts:[{role:"Co-Founder and CEO",name:"Ian Goldstein",email:""},{role:"Co-Founder and Chief People Officer",name:"Jennifer Goldstein",email:"jennifer.goldstein@soarautismcenter.com"},{role:"Chief Operating Officer",name:"Ana Cesan",email:"",phone:"(201) 572-1727"},{role:"Sr. Director - Growth & Strategic BD",name:"Trevor House",email:""}]},
+  {id:42,name:"Howden Group Holdings",cat:"Professional",locs:400,rev:"$20B+",hq:"London, UK",problems:["International","Bill Pay","Lease Admin"],problem:"Employee-owned global insurance with offices worldwide. Mohr international capability is key differentiator.",contacts:[{role:"CEO",name:"David Howden CBE",email:""},{role:"Chief Operating Officer",name:"David Shalders",email:""},{role:"CEO, Americas",name:"Mike Parrish",email:""},{role:"Group Chief Financial Officer",name:"Susan Panuccio",email:"susan.panuccio@howdengroup.com",phone:"(917) 754-4460"}]},
+  {id:43,name:"USA Vein Clinics",cat:"Healthcare",locs:168,rev:"$48.9M+",hq:"Northbrook, IL",problems:["Lease Admin","Site Selection","Rightsizing"],problem:"Founder-owned vein/vascular platform with clinics across multiple specialty lines.",contacts:[{role:"Founder and CEO",name:"Dr. Yan Katsnelson",email:"ykatsnelson@usaveinclinics.com",phone:"(847) 593-8460"},{role:"Founder",name:"Dr. Flora Katsnelson",email:"",phone:"(281) 388-5521"},{role:"Chief Financial Officer",name:"Chuck Stich",email:"",phone:"(773) 230-1145"},{role:"President Operations, Development, Accreditat",name:"Lisa Baccega",email:"",phone:"(224) 318-0118"}]},
+  {id:44,name:"Gastro Health",cat:"Healthcare",locs:209,rev:"$71M+",hq:"Miami, FL",problems:["Lease Admin","Acquisition Support","Site Selection"],problem:"PE-backed GI platform with active expansion. Lease admin for new practices and BI for patient concentration.",contacts:[{role:"Chief Executive Officer",name:"Alan Oliver",email:"aoliver@gastrohealth.com",phone:"(954) 804-5691"},{role:"Chief Financial Officer",name:"Lawrence Freni, CPA",email:"lfreni@gastrohealth.com",phone:"(305) 351-8154"},{role:"Chief Operating Officer",name:"Philip Meador",email:"",phone:"(251) 367-1911"},{role:"Chief Development Officer",name:"Frank Manes, CPA",email:"",phone:"(305) 351-8151"},{role:"General Counsel & Chief Compliance Officer",name:"Jason Wallace, JD, MPH",email:""}]},
+  {id:45,name:"Women's Care",cat:"Healthcare",locs:100,rev:"$563M+",hq:"Tampa, FL",problems:["Lease Admin","Acquisition Support","Site Selection"],problem:"PE-backed OB/GYN with acquisition-driven growth into new states.",contacts:[{role:"Chairman of the Board, WCF",name:"Ignacio Armas, MD",email:""},{role:"Chief Operating Officer",name:"Krista Christensen",email:"",phone:"(206) 541-0768"},{role:"Chief Financial Officer",name:"Kim Smith",email:"",phone:"(623) 734-7617"},{role:"General Counsel",name:"Kelly Z. Andrews, Esq",email:"bonnie.cook@mantech.com",phone:"(727) 638-1296"}]},
+  {id:46,name:"Pritchard Industries",cat:"Industrial",locs:53,rev:"$3.8B+",hq:"New York, NY",problems:["Lease Admin","Acquisition Support","Site Selection"],problem:"PE-backed facility services. Recent acquisition and new leadership team.",contacts:[{role:"President & Chief Executive Officer",name:"Erin Meehan",email:"emeehan@pritchardindustries.com",phone:"(203) 770-1247"},{role:"Chief Financial Officer",name:"Thorsten Koch",email:"thorsten.koch@pritchardindustries.com",phone:"(251) 644-4663"},{role:"President, Janitorial Division",name:"Ty Mericle",email:"",phone:"(724) 496-1724"}]},
+  {id:47,name:"DECA Dental (Ideal Dental)",cat:"Healthcare",locs:200,rev:"$87M+",hq:"Dallas, TX",problems:["De Novo Expansion","Lease Admin","Site Selection"],problem:"Blackstone-backed DSO. JV program active. De novo site selection and lease admin at scale.",contacts:[{role:"Founder, Chairman & CEO (since 2008)",name:"Dr. Sulman Ahmed",email:"",phone:"(972) 697-8732"},{role:"Managing Clinical Director",name:"Rodney Alles",email:"",phone:"(864) 444-2328"},{role:"Chief Dental Officer",name:"Chris Swayden",email:"cswayden@decadental.com",phone:"(469) 420-5099"}]},
+  {id:48,name:"Action Behavior Centers",cat:"Healthcare",locs:450,rev:"$2.1B+",hq:"Austin, TX",problems:["De Novo Expansion","Lease Admin","Site Selection"],problem:"PE-backed ABA therapy leader. Primarily de novo. Childcare zoning makes site selection complex.",contacts:[{role:"Founders (founded ABC in 2017 in Austin, TX)",name:"Ryan & Holly Lambert",email:"",phone:"(512) 375-2710"},{role:"Chief Executive Officer",name:"Hersh Sanghavi",email:""},{role:"Chief Operating Officer (since 2018)",name:"Chris Johnson",email:""},{role:"Chief Financial Officer — *key contact for te",name:"Ryan Chen",email:""},{role:"General Counsel & Chief Compliance Officer",name:"Brian J. Burns",email:""}]},
+  {id:49,name:"Metro Vein Centers",cat:"Healthcare",locs:60,rev:"$80.7M",hq:"New York, NY",problems:["De Novo Expansion","Lease Admin","Site Selection"],problem:"Targeting aggressive clinic growth. New CEO. Technical medical buildouts make site selection complex.",contacts:[{role:"Chief Executive Officer (since January 2025);",name:"Andrew Provost",email:"andrew@metroveincenters.com",phone:"(248) 225-8446"},{role:"Chief Financial Officer",name:"Mike Wendt",email:"mwendt@metroveincenters.com",phone:"(313) 656-6480"},{role:"Chief Revenue Officer",name:"Matt Kirk",email:"mkirk@metroveincenters.com",phone:"(708) 710-9931"}]},
+  {id:50,name:"Unified Women's Healthcare",cat:"Healthcare",locs:925,rev:"$1.4B+",hq:"Tampa, FL",problems:["Lease Admin","Portfolio Audit","Acquisition Support"],problem:"Largest OB/GYN MSO. Each acquisition adds new lease portfolio. Massive ongoing lease admin opportunity.",contacts:[{role:"President & Chief Executive Officer",name:"David Young",email:""},{role:"Executive Chairman, Unified Women’s Healthcare",name:"Paul Kusserow",email:"paul.kusserow@healthpilot.com",phone:"(805) 705-5972"},{role:"President, OBGYN MSO (since May 2023)",name:"Harriet Booker",email:"",phone:"(225) 279-5014"},{role:"Chief Development Officer, OBGYN MSO",name:"Andy DeVillers",email:"adevillers@unifiedwomenshealthcare.com",phone:"(704) 287-8354"}]}
 ];
 
 let currentProfile=null,openCORId=null,emailQueue=[],aiOpen=false,aiHistory=[],notesCurrent=null;
@@ -930,8 +1103,9 @@ function enterApp(profile){
   var _psInp=document.getElementById("ps-apikey");if(_psInp)_psInp.value="";
   var _psSt=document.getElementById("ps-apiStatus");
   if(_psSt&&pGet("apikey")){_psSt.style.color="rgba(100,220,100,.8)";_psSt.textContent="✓ API key saved for this profile";}
-  const fab=document.getElementById("objFab");if(fab)fab.style.display="flex";
-  renderAll();autoReconnectFirebase();
+  const fab=document.getElementById("aiFab");if(fab)fab.style.display="flex";
+  renderAll();
+  autoReconnectFirebase();
   setTimeout(scheduleAutoNews, 6000); // auto-refresh stale news in background
 }
 function logout(){currentProfile=null;openCORId=null;emailQueue=[];aiHistory=[];document.getElementById("mainApp").style.display="none";document.getElementById("profileScreen").style.display="flex";renderProfileScreen()}
@@ -943,13 +1117,49 @@ function showPage(id,btn){
   if(btn)btn.classList.add("on");
   if(id==="pipeline")renderPipeline();
   if(id==="notes")renderNoteList();
-  if(id==="winloss")renderWL();
+  if(id==="winloss"&&typeof renderWL==="function")renderWL();
   if(id==="dashboard"){renderDashboard();renderDashboardTouchWidget();renderHotLeads()}
   if(id==="touches")renderTouchPage();
   if(id==="news")renderNewsPage();
   if(id==="followups")renderFollowupsPage();
+  if(id==="email")renderCORs();
 }
-function renderAll(){renderDashboard();renderCORs();renderPipeMini();renderDashboardTouchWidget();renderHotLeads()}
+function renderDashboard(){
+  var pd = getPipelineData();
+  var counts = {}; STAGES.forEach(function(s){counts[s]=0;});
+  Object.values(pd).forEach(function(s){if(counts[s]!==undefined)counts[s]++;});
+
+  // Stats row
+  var sr = document.getElementById("statsRow");
+  if(sr){
+    var total = COS_ALL().length;
+    var contacted = COS_ALL().filter(function(co){return (pd[co.id]||"Cold")!=="Cold";}).length;
+    var notContacted = total - contacted;
+    var meetings = counts["Meeting Set"]||0;
+    sr.innerHTML = [
+      {label:"Total CORs",       val:total,        c:"var(--navy)"},
+      {label:"Contacted",        val:contacted,     c:"#1565c0"},
+      {label:"Not Contacted",    val:notContacted,  c:"var(--gm)"},
+      {label:"Meetings Set",     val:meetings,      c:"#2e7d32"},
+    ].map(function(s){
+      return '<div style="background:#fff;border-radius:10px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06);border-top:3px solid '+s.c+'">'
+        +'<div style="font-size:28px;font-weight:800;color:'+s.c+'">'+s.val+'</div>'
+        +'<div style="font-size:11px;color:var(--ts);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">'+s.label+'</div>'
+      +'</div>';
+    }).join("");
+  }
+  renderFollowUps();
+  renderPipeMini();
+  renderRecentOutreach();
+}
+
+function renderAll(){
+  try{renderDashboard();}catch(e){console.error("renderDashboard error",e);}
+  try{renderCORs();}catch(e){console.error("renderCORs error",e);}
+  try{renderPipeMini();}catch(e){console.error("renderPipeMini error",e);}
+  try{renderDashboardTouchWidget();}catch(e){console.error("renderDashboardTouchWidget error",e);}
+  try{renderHotLeads();}catch(e){console.error("renderHotLeads error",e);}
+}
 
 function getPipelineData(){return pGet("pipeline")||{}}
 function setStageCOR(corId,stage){const d=getPipelineData();d[corId]=stage;pSet("pipeline",d);renderPipeMini();renderDashboard()}
@@ -1157,7 +1367,7 @@ function renderCORBody(c,stage){
   <div style="margin-bottom:12px">
   <div style="font-size:10px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px">Select Contact(s)</div>
   <div id="contactsDisplay-${c.id}">
-    <div class="contacts-row">${getContacts(c.id).map((ct,i)=>{const k=ct.email||ct.name;const s=sel.includes(k);return`<div class="ct-card${s?" sel":""}" onclick="toggleContact(${c.id},${i})"><div class="ct-check">${s?"&#10003;":""}</div><div class="ct-role">${ct.role||"Contact"}</div><div class="ct-name">${ct.name}</div><div class="ct-email">${ct.email||'<span style="color:var(--gm);font-style:italic">No email</span>'}</div></div>`}).join("")||'<div style="color:var(--gm);font-size:12px">No contacts yet.</div>'}</div>
+    <div class="contacts-row">${getContacts(c.id).map((ct,i)=>{const k=ct.email||ct.name;const s=sel.includes(k);return`<div class="ct-card${s?" sel":""}" onclick="toggleContact(${c.id},${i})"><div class="ct-check">${s?"&#10003;":""}</div><div class="ct-role">${ct.role||"Contact"}</div><div class="ct-name">${ct.name}</div><div class="ct-email">${ct.email||'<span style="color:var(--gm);font-style:italic">No email</span>'}</div>${ct.phone?`<div style="font-size:10px;color:var(--gm)">${ct.phone}</div>`:""}</div>`}).join("")||'<div style="color:var(--gm);font-size:12px">No contacts yet.</div>'}</div>
     <button type="button" onclick="startEditContacts(${c.id})" style="background:none;border:none;font-size:10px;color:var(--gold3);cursor:pointer;text-decoration:underline;margin-top:6px;font-weight:600">&#9998; Edit contacts</button>
   </div>
 </div>
@@ -1166,6 +1376,13 @@ function renderCORBody(c,stage){
   <div class="angle-row">${(pGet("customProblems_"+c.id)||c.problems||[]).map(a=>`<button type="button" class="abt${a===angle?" on":""}" onclick="setAngle(${c.id},'${a.replace(/'/g,"\\'")}')">${a}</button>`).join("")}</div>
   <button type="button" onclick="startEditAngles(${c.id})" style="background:none;border:none;font-size:10px;color:var(--gold3);cursor:pointer;text-decoration:underline;margin-top:6px;font-weight:600">&#9998; Edit angles</button>
   </div></div>
+  <div style="margin-bottom:12px">
+    <div style="font-size:10px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between">
+      Company Notes
+      <span style="font-size:10px;color:var(--gm);font-weight:400;text-transform:none">Auto-saved</span>
+    </div>
+    <textarea id="cornotes-${c.id}" rows="2" placeholder="Research notes, context, intel about this company..." style="width:100%;border:1.5px solid var(--gl);border-radius:8px;padding:8px 12px;font-size:12px;line-height:1.55;color:var(--tp);outline:none;resize:vertical;font-family:inherit;background:var(--off)" oninput="saveCorNote(${c.id},this.value)">${pGet('cornote_'+c.id)||''}</textarea>
+  </div>
   <div class="draft-area">
     <div class="draft-hdr">
       <div><div class="draft-title">Email Sequence</div>
@@ -1329,19 +1546,13 @@ function renderPipeline(){
 }
 function goToEmailEngine(corId){showPage("email",document.querySelectorAll(".ntab")[1]);openCORId=corId;renderCORs();setTimeout(()=>{const el=document.getElementById("cor-"+corId);if(el)el.scrollIntoView({behavior:"smooth",block:"start"})},200)}
 
-function getNotes(){return pGet("notes")||{}}
-function saveNotes(n){pSet("notes",n)}
-function renderNoteList(){
-  const q=(document.getElementById("noteSearch")||{}).value?.toLowerCase()||"";const notes=getNotes();
-  const items=COS_ALL().filter(c=>{const hasNote=notes[c.id]&&notes[c.id].text;return hasNote&&(!q||c.name.toLowerCase().includes(q)||(notes[c.id]?.text||"").toLowerCase().includes(q))});
-  const list=document.getElementById("noteList");
-  if(!items.length){list.innerHTML='<div style="padding:16px;color:var(--gm);font-size:12px">No notes yet.</div>';return}
-  list.innerHTML=items.map(c=>{const n=notes[c.id];return`<div class="note-item${notesCurrent===c.id?" on":""}" onclick="openNote(${c.id})"><div class="ni-co">${c.name}</div><div class="ni-prev">${(n.text||"").slice(0,55).replace(/\n/g," ")}...</div><div class="ni-date">${n.updated||""}</div></div>`}).join("");
-}
-function openNote(corId){notesCurrent=corId;const c=COS_ALL().find(co=>co.id===corId);const notes=getNotes();document.getElementById("noteTitle").textContent=c.name;document.getElementById("noteDate").textContent=notes[corId]?.updated||"";document.getElementById("noteTA").value=notes[corId]?.text||"";renderNoteList()}
-function newNote(){const co=COS_ALL().find(c=>!getNotes()[c.id]?.text);if(co)openNote(co.id)}
+
+
+
+
+
 function saveCurrentNote(){if(!notesCurrent)return;const text=document.getElementById("noteTA").value;const notes=getNotes();const now=new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});notes[notesCurrent]={text,updated:now};saveNotes(notes);document.getElementById("noteSaved").textContent="Saved "+now;document.getElementById("noteDate").textContent=now}
-function deleteNote(){if(!notesCurrent)return;const notes=getNotes();delete notes[notesCurrent];saveNotes(notes);notesCurrent=null;document.getElementById("noteTitle").textContent="Select a company";document.getElementById("noteTA").value="";renderNoteList()}
+
 
 function getWL(){return pGet("winloss")||[]}
 function openAddWL(){document.getElementById("wlCo").innerHTML=COS_ALL().map(c=>`<option value="${c.id}">${c.name}</option>`).join("");["wlContact","wlAngle","wlNotes"].forEach(id=>document.getElementById(id).value="");document.getElementById("wlOverlay").style.display="flex"}
@@ -1376,7 +1587,7 @@ async function openCallPrep(corId){
   const c=COS_ALL().find(co=>co.id===corId);if(!c)return;const apiKey=getAPIKey();
   document.getElementById("cpTitle").textContent=c.name+" \u2014 Call Prep";document.getElementById("cpContent").innerHTML='<div style="display:flex;align-items:center;gap:8px;color:var(--ts)"><div class="spin"></div>Generating...</div>';document.getElementById("callPrepOverlay").style.display="flex";
   if(!apiKey){document.getElementById("cpContent").innerHTML="<strong>"+c.name+"</strong><br><br>"+c.problem+"<br><br>Angles: "+(c.problems||[]).join(", ")+"<br><br><em>Add API key in Settings for AI-generated prep.</em>";return}
-  const notes=(pGet("notes")||{})[corId]?.text||"No notes.";const stage=getPipelineData()[corId]||"Cold";
+  const notesArr=(typeof getNotes==="function"?getNotes():[]);const noteForCo=notesArr.find(function(n){return n.corId==corId;});const notes=noteForCo?noteForCo.body:"No notes.";const stage=getPipelineData()[corId]||"Cold";
   const prompt="Call prep sheet for "+c.name+". I'm from Mohr Partners (largest tenant rep MBE, lease admin, CAM audits, BI, Bill Pay, international). Background: "+c.problem+"\nCategory: "+c.cat+" | HQ: "+(c.hq||"")+"\nStage: "+stage+"\nNotes: "+notes+"\n\nDo not cite specific numbers as facts. Provide:\n1. Company Snapshot (2-3 sentences)\n2. Why They Need Mohr (2-3 reasons)\n3. Opening Line\n4. Three Discovery Questions\n5. Key Objection + Handler\n6. CTA Goal\n\nKeep it tight and practical.";
   try{const resp=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:900,messages:[{role:"user",content:prompt}]})});const data=await resp.json();if(resp.ok){const text=(data.content||[]).map(b=>b.text||"").join("").trim();document.getElementById("cpContent").innerHTML=text.replace(/\n/g,"<br>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>")}else document.getElementById("cpContent").innerHTML="Error generating."
   }catch(e){document.getElementById("cpContent").innerHTML="Error: "+e.message}
@@ -2081,12 +2292,13 @@ function openLogTouch(corId){
   var sel=pGet("selContacts_"+corId)||[];
   var ct=(co.contacts||[]).find(function(x){return sel.includes(x.email||x.name);})||(co.contacts||[])[0]||{};
   document.getElementById("ltc-contact").value=ct.name||"";
-  // Pre-fill subject from current draft
-  var subj=pGet("draft_subj_"+corId)||"";
-  document.getElementById("ltc-subject").value=subj;
-  // Default outcome: sent, type: Email
+  // Render type first so ltc-subject exists before we fill it
   document.getElementById("ltc-type").value="Email";
   document.getElementById("ltc-outcome").value="sent";
+  renderLTCDynamicFields();
+  // Now fill subject
+  var subj=pGet("draft_subj_"+corId)||"";
+  var sEl=document.getElementById("ltc-subject");if(sEl)sEl.value=subj;
   // Pre-fill stage: default to Contacted unless already past that
   var _curStage=getPipelineData()[corId]||"Cold";
   var _stageEl=document.getElementById("ltc-stage");
@@ -2110,7 +2322,7 @@ function saveLogTouchCOR(){
   var type=document.getElementById("ltc-type").value;
   var outcome=document.getElementById("ltc-outcome").value;
   var contact=(document.getElementById("ltc-contact").value||"").trim();
-  var subject=(document.getElementById("ltc-subject").value||"").trim();
+  var subject=(document.getElementById("ltc-subject")?document.getElementById("ltc-subject").value||"":"").trim();var bodyNotes=(document.getElementById("ltc-body-notes")?document.getElementById("ltc-body-notes").value||"":"").trim();
   var followupDate=document.getElementById("ltc-followup").value;
 
   // Log the activity
@@ -2124,7 +2336,7 @@ function saveLogTouchCOR(){
     contactRole:ct.role||"",
     outcome:outcome,
     subject:subject||"(no subject)",
-    body:pGet("draft_bodies_"+_ltcCorId)?.[pGet("seqtab_"+_ltcCorId)||0]||""
+    body:bodyNotes||(pGet("draft_bodies_"+_ltcCorId)&&pGet("draft_bodies_"+_ltcCorId)[pGet("seqtab_"+_ltcCorId)||0])||""
   });
 
   // Set follow-up date
@@ -2152,7 +2364,7 @@ function saveLogTouchCOR(){
   document.getElementById("logTouchCOROverlay").style.display="none";
   renderCORs();renderDashboard();
   if(document.getElementById("page-touches")&&document.getElementById("page-touches").classList.contains("active"))renderTouchPage();
-  showToast("Logged ✔ Follow-up set for "+new Date(followupDate).toLocaleDateString("en-US",{month:"short",day:"numeric"}));
+  var _fuLbl=followupDate?new Date(followupDate).toLocaleDateString("en-US",{month:"short",day:"numeric"}):"";showToast("Logged ✔"+(followupDate?" · Follow-up "+_fuLbl:""));
 }
 
 // ─── FOLLOW-UPS PAGE ────────────────────────────────────────────
@@ -2413,6 +2625,7 @@ function renderContactsDisplay(corId){
         +'<input value="'+ct.name.replace(/"/g,'&quot;')+'" onchange="saveContactField('+corId+','+i+',\'name\',this.value)" placeholder="Name" style="flex:1.2;min-width:80px;border:1.5px solid var(--gl);border-radius:6px;padding:5px 9px;font-size:12px;color:var(--tp);outline:none">'
         +'<input value="'+(ct.role||"").replace(/"/g,'&quot;')+'" onchange="saveContactField('+corId+','+i+',\'role\',this.value)" placeholder="Role/Title" style="flex:1;min-width:80px;border:1.5px solid var(--gl);border-radius:6px;padding:5px 9px;font-size:12px;color:var(--tp);outline:none">'
         +'<input value="'+(ct.email||"").replace(/"/g,'&quot;')+'" onchange="saveContactField('+corId+','+i+',\'email\',this.value)" placeholder="email@company.com" style="flex:1.5;min-width:120px;border:1.5px solid var(--gl);border-radius:6px;padding:5px 9px;font-size:12px;color:var(--tp);outline:none">'
+        +'<input value="'+(ct.phone||"").replace(/"/g,'&quot;')+'" onchange="saveContactField('+corId+','+i+',\'phone\',this.value)" placeholder="Phone" style="flex:.8;min-width:80px;border:1.5px solid var(--gl);border-radius:6px;padding:5px 9px;font-size:12px;color:var(--tp);outline:none">'
         +'<button type="button" data-remove-ct="1" data-cid="'+corId+'" data-ctidx="'+i+'" style="background:none;border:none;color:#c62828;font-size:15px;cursor:pointer;font-weight:900;padding:0 4px" title="Remove">&times;</button>'
       +'</div>';
     }).join("");
@@ -2430,7 +2643,8 @@ function renderContactsDisplay(corId){
         +'<div class="ct-check">'+(selected?"&#10003;":"")+'</div>'
         +'<div class="ct-role">'+ct.role+'</div>'
         +'<div class="ct-name">'+ct.name+'</div>'
-        +'<div class="ct-email">'+(ct.email||'<span style="color:var(--gm);font-style:italic">No email — click to add</span>')+'</div>'
+        +'<div class="ct-email">'+(ct.email||'<span style="color:var(--gm);font-style:italic">No email</span>')+'</div>'
+      +(ct.phone?'<div style="font-size:10px;color:var(--gm)">'+ct.phone+'</div>':"")
       +'</div>';
     }).join("") || '<div style="color:var(--gm);font-size:12px">No contacts — click Edit to add some.</div>';
 
@@ -2914,16 +3128,93 @@ function fuCalDayClick(key){
 }
 
 
+// ── Dynamic Log Touch fields by type ─────────────────────────────────────
+function renderLTCDynamicFields(){
+  var type = (document.getElementById("ltc-type")||{}).value || "Email";
+  var el   = document.getElementById("ltc-dynamic-fields"); if(!el) return;
+
+  var inputStyle = 'width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:9px 13px;font-size:13px;outline:none;margin-bottom:14px;font-family:inherit';
+  var lblStyle   = 'display:block;color:var(--gm);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px';
+
+  if(type === "Email"){
+    el.innerHTML =
+      '<label style="'+lblStyle+'">Email Subject</label>'
+      +'<input type="text" id="ltc-subject" placeholder="e.g. Tenant Rep Introduction — Mohr Partners" style="'+inputStyle+'">'
+      +'<label style="'+lblStyle+'">Email Preview / Notes (optional)</label>'
+      +'<textarea id="ltc-body-notes" rows="3" placeholder="Paste key lines from the email, or leave blank..." style="'+inputStyle+';resize:vertical;line-height:1.5"></textarea>';
+  } else if(type === "Call"){
+    el.innerHTML =
+      '<label style="'+lblStyle+'">Call Notes</label>'
+      +'<textarea id="ltc-subject" rows="3" placeholder="Who answered, what was said, next step..." style="'+inputStyle+';resize:vertical;line-height:1.5"></textarea>'
+      +'<label style="'+lblStyle+'">Duration (optional)</label>'
+      +'<input type="text" id="ltc-body-notes" placeholder="e.g. 12 min" style="'+inputStyle+'">';
+  } else if(type === "LinkedIn"){
+    el.innerHTML =
+      '<label style="'+lblStyle+'">Message Sent / Connection Note</label>'
+      +'<textarea id="ltc-subject" rows="3" placeholder="Paste or summarize your LinkedIn message..." style="'+inputStyle+';resize:vertical;line-height:1.5"></textarea>'
+      +'<label style="'+lblStyle+'">Profile URL (optional)</label>'
+      +'<input type="text" id="ltc-body-notes" placeholder="linkedin.com/in/..." style="'+inputStyle+'">';
+  } else if(type === "In-Person"){
+    el.innerHTML =
+      '<label style="'+lblStyle+'">Meeting Summary</label>'
+      +'<textarea id="ltc-subject" rows="3" placeholder="Where you met, what was discussed, who was there..." style="'+inputStyle+';resize:vertical;line-height:1.5"></textarea>'
+      +'<label style="'+lblStyle+'">Location (optional)</label>'
+      +'<input type="text" id="ltc-body-notes" placeholder="e.g. BOMA Dallas, their office, coffee..." style="'+inputStyle+'">';
+  } else {
+    el.innerHTML =
+      '<label style="'+lblStyle+'">Notes</label>'
+      +'<textarea id="ltc-subject" rows="3" placeholder="Describe the touchpoint..." style="'+inputStyle+';resize:vertical;line-height:1.5"></textarea>'
+      +'<input type="hidden" id="ltc-body-notes" value="">';
+  }
+
+  // Re-fill subject if we have a saved draft subject
+  if(type === "Email" && _ltcCorId){
+    var saved = pGet("draft_subj_"+_ltcCorId)||"";
+    var inp = document.getElementById("ltc-subject");
+    if(inp && saved) inp.value = saved;
+  }
+}
+
+
+function saveCorNote(corId, val){
+  pSet("cornote_"+corId, val);
+}
+
 function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500)}
 
 window.addEventListener("DOMContentLoaded",async()=>{
-  const fbCfg=localStorage.getItem("fbConfig");
-  if(fbCfg){try{const cfg=JSON.parse(fbCfg);const{initializeApp,getApps}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");const{getFirestore,doc,getDoc}=await importFS();const existing=getApps().find(a=>a.options.projectId===cfg.projectId);const app=existing||initializeApp(cfg,cfg.projectId);const db=getFirestore(app);const pd=await getDoc(doc(db,"bd_data","_profiles"));if(pd.exists()){const cp=JSON.parse(pd.data().value||"[]");if(cp.length)saveProfiles(cp)}}catch(e){console.warn("Pre-load failed:",e)}}
-  if(!getProfiles().length)saveProfiles([{name:"Trey Nemeth",title:"BD Associate",pin:"",color:0}]);
-  renderProfileScreen();
-  // Schedule auto-news background refresh after login
+  // Force profileScreen visible immediately
+  var _ps=document.getElementById("profileScreen");
+  if(_ps)_ps.style.display="flex";
+  var _ma=document.getElementById("mainApp");
+  if(_ma)_ma.style.display="none";
+
+  // Try to pre-load Firebase profiles (fail silently)
+  try{
+    const fbCfg=localStorage.getItem("fbConfig");
+    if(fbCfg){
+      const cfg=JSON.parse(fbCfg);
+      const{initializeApp,getApps}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+      const{getFirestore,doc,getDoc}=await importFS();
+      const existing=getApps().find(a=>a.options.projectId===cfg.projectId);
+      const app=existing||initializeApp(cfg,cfg.projectId);
+      const db=getFirestore(app);
+      const pd=await getDoc(doc(db,"bd_data","_profiles"));
+      if(pd.exists()){const cp=JSON.parse(pd.data().value||"[]");if(cp.length)saveProfiles(cp);}
+    }
+  }catch(e){console.warn("Firebase pre-load failed (non-fatal):",e);}
+
+  // Always run regardless of Firebase outcome
+  try{
+    if(!getProfiles().length)saveProfiles([{name:"Trey Nemeth",title:"BD Associate",pin:"",color:0}]);
+    renderProfileScreen();
+  }catch(err){
+    document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#001a38;color:#fff;font-family:sans-serif;flex-direction:column;gap:16px"><h2>Mohr Partners BD Center</h2><p style="color:#f44;font-size:13px">Startup error: '+err.message+'</p><p style="color:rgba(255,255,255,.5);font-size:11px">Open browser console (F12) for details.</p></div>';
+  }
   window._autoNewsScheduled = false;
 });
 </script>
+</div>
+</div>
 </body>
 </html>
