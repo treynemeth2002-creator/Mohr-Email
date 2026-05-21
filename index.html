@@ -950,24 +950,38 @@ function enterApp(profile){
   currentProfile=profile;
   document.getElementById("profileScreen").style.display="none";
   document.getElementById("mainApp").style.display="block";
-  document.getElementById("navAv").className="nav-av c"+profile.color;
-  document.getElementById("navAv").textContent=profile.name.slice(0,2).toUpperCase();
-  document.getElementById("navName").textContent=profile.name;
-  document.getElementById("navTitle").textContent=profile.title||"BD Associate";
+  var av=document.getElementById("navAv");
+  if(av){av.className="nav-av c"+profile.color;av.textContent=profile.name.slice(0,2).toUpperCase();}
+  var nn=document.getElementById("navName");if(nn)nn.textContent=profile.name;
+  var nt=document.getElementById("navTitle");if(nt)nt.textContent=profile.title||"BD Associate";
   var h=new Date().getHours();
-  var greetEl=document.getElementById("dashGreet");
-  if(greetEl)greetEl.textContent=h<12?"Good morning":h<17?"Good afternoon":"Good evening";
-  var subEl=document.getElementById("dashSub");
-  if(subEl)subEl.textContent=profile.name+" · Mohr Partners BD Command Center";
+  var gr=document.getElementById("dashGreet");if(gr)gr.textContent=h<12?"Good morning":h<17?"Good afternoon":"Good evening";
+  var su=document.getElementById("dashSub");if(su)su.textContent=profile.name+" · Mohr Partners";
   emailQueue=[];openCORId=null;aiHistory=[];notesCurrent=null;
-  loadSettings();loadTheme();
-  document.querySelectorAll(".page").forEach(function(p){p.style.display="none";p.classList.remove("on");});
+  try{loadSettings();}catch(e){}
+  try{loadTheme();}catch(e){}
+  // Use ONLY classList - no inline styles on pages (inline overrides CSS and breaks showPage)
+  document.querySelectorAll(".page").forEach(function(p){
+    p.className=p.className.replace(/\bon\b/g,"").trim();
+    p.removeAttribute("style");
+  });
   var dp=document.getElementById("page-dashboard");
-  if(dp){dp.style.display="block";dp.classList.add("on");}
-  document.querySelectorAll(".ntab").forEach(function(t,i){if(i===0)t.classList.add("on");else t.classList.remove("on");});
+  if(dp)dp.className=(dp.className+" on").trim();
+  document.querySelectorAll(".ntab").forEach(function(t,i){
+    if(i===0)t.className=(t.className+" on").trim();
+    else t.className=t.className.replace(/\bon\b/g,"").trim();
+  });
   var fab=document.getElementById("aiFab");if(fab)fab.style.display="flex";
-  renderAll();
-  autoReconnectFirebase();
+  setTimeout(function(){
+    try{renderDashboard();}catch(e){}
+    try{renderDashboardTouchWidget();}catch(e){}
+    try{renderHotLeads();}catch(e){}
+    setTimeout(function(){
+      try{renderCORs();}catch(e){}
+      try{renderPipeMini();}catch(e){}
+      try{autoReconnectFirebase();}catch(e){}
+    },100);
+  },0);
 }
 function logout(){currentProfile=null;openCORId=null;emailQueue=[];aiHistory=[];document.getElementById("mainApp").style.display="none";document.getElementById("profileScreen").style.display="flex";renderProfileScreen()}
 
