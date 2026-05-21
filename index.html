@@ -358,11 +358,16 @@ option{color:#1a2332;background:#fff}
     <button type="button" class="ntab" onclick="showPage('pipeline',this)">&#128200; Pipeline</button>
     <button type="button" class="ntab" onclick="showPage('news',this)">&#128240; News</button>
     <button type="button" class="ntab" onclick="showPage('touches',this)">&#127919; Touches</button>
-    <button type="button" class="ntab" onclick="showPage('notes',this)">&#128221; Notes</button>
     <button type="button" class="ntab" onclick="showPage('followups',this)">&#128197; Follow-Ups</button>
     <button type="button" class="ntab" onclick="showPage('settings',this)">&#9881; Settings</button>
   </div>
   <div class="nav-r">
+    <div style="position:relative;margin-right:8px">
+      <input type="text" id="globalSearch" placeholder="🔍 Search companies, notes, activity..." 
+        style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;padding:7px 32px 7px 12px;font-size:12px;outline:none;width:260px;font-family:inherit"
+        oninput="globalSearchHandler(this.value)" onblur="setTimeout(function(){document.getElementById('searchResults').style.display='none'},300)">
+      <div id="searchResults" style="display:none;position:absolute;top:36px;left:0;right:0;background:#fff;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.3);z-index:9000;max-height:320px;overflow-y:auto;border:1.5px solid #eee"></div>
+    </div>
     <div id="syncIndicator" style="display:none;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.5);cursor:pointer" onclick="showPage('settings',document.querySelectorAll('.ntab')[7]);showSetting('cloudsync',null)">
       <span id="syncDot" style="width:7px;height:7px;border-radius:50%;background:#4caf50;flex-shrink:0"></span>
       <span id="syncTxt">Synced</span>
@@ -387,7 +392,7 @@ option{color:#1a2332;background:#fff}
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
       <div><span style="font-size:22px;font-weight:800;color:var(--navy)" id="touchWeekCount">0</span><span style="font-size:14px;color:var(--ts);margin-left:4px">/ 150 touches this week</span></div>
       <div style="display:flex;gap:10px;flex-wrap:wrap" id="touchBreakdown"></div>
-      <button type="button" class="gen-btn" style="padding:7px 14px;font-size:12px" onclick="openLogTouch()">+ Log Touch</button>
+      <button type="button" class="gen-btn" style="padding:7px 14px;font-size:12px" onclick="openLogTouchGeneral()">+ Log Touch</button>
     </div>
     <div style="background:var(--gl);border-radius:20px;height:10px;overflow:hidden"><div id="touchBar" style="height:100%;border-radius:20px;background:var(--gold);transition:width .4s;width:0%"></div></div>
   </div>
@@ -755,7 +760,7 @@ option{color:#1a2332;background:#fff}
 
     <div id="ltc-dynamic-fields"></div>
 
-    <label style="display:block;color:var(--gm);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">Move to Stage</label>
+    <label style="display:block;color:var(--gm);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">Move to Stage (or keep current)</label>
     <select id="ltc-stage" style="width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:9px 13px;font-size:13px;margin-bottom:14px;outline:none">
       <option value="">— Keep current stage —</option>
       <option value="Contacted">Contacted</option>
@@ -1139,9 +1144,11 @@ function renderCORs(){
   function buildCORRow(c){
     const stage=pd[c.id]||"Cold"; const isOpen=openCORId===c.id;
     const lt=getLastTouched(c.id);
+    var _ltColor="var(--gm)",_ltBg="transparent";
+    if(lt){var _days=Math.floor((Date.now()-new Date(lt).getTime())/86400000);_ltColor=_days<7?"#2e7d32":_days<30?"#f57c00":"#c62828";_ltBg=_days<7?"rgba(46,125,50,.08)":_days<30?"rgba(245,124,0,.08)":"rgba(198,40,40,.08)";}
     const lastBadge=lt
-      ? '<span style="font-size:10px;color:var(--gm);white-space:nowrap">Last: '+formatRelTime(lt)+'</span>'
-      : '<span style="font-size:10px;color:var(--gm)">Not contacted</span>';
+      ? '<span style="font-size:10px;color:'+_ltColor+';background:'+_ltBg+';padding:2px 7px;border-radius:10px;white-space:nowrap;font-weight:600">'+formatRelTime(lt)+'</span>'
+      : '<span style="font-size:10px;color:#c62828;background:rgba(198,40,40,.06);padding:2px 7px;border-radius:10px;font-weight:600">Never contacted</span>';
     return `<div class="cor-row${isOpen?" active":""}" id="cor-${c.id}">
       <div class="cr-top" onclick="toggleCOR(${c.id})">
         <div class="cr-num">#${c.id}</div>
@@ -1887,7 +1894,7 @@ function showSetting(id,el){
   document.querySelectorAll(".settings-section").forEach(s=>s.classList.remove("on"));document.querySelectorAll(".snav-item").forEach(s=>s.classList.remove("on"));
   const ss=document.getElementById("ss-"+id);if(ss)ss.classList.add("on");if(el)el.classList.add("on");
   if(id==="profiles")renderProfileMgmt();
-  if(id==="theme")applyTheme(pGet("theme")||"dark");
+  if(id==="theme")applyTheme(pGet("theme")||"mohr");
   if(id==="cloudsync"){const saved=localStorage.getItem("fbConfig");if(saved){try{document.getElementById("fbConfig").value=JSON.stringify(JSON.parse(saved),null,2)}catch(e){}}if(_syncEnabled){document.getElementById("syncActiveInfo").style.display="block";document.getElementById("syncNowBtn").style.display="inline-flex";document.getElementById("disconnectBtn").style.display="inline-flex"}}
 }
 function setTone(el,tone){document.querySelectorAll(".tone-opt").forEach(t=>t.classList.remove("on"));el.classList.add("on");const p=pGet("emailPrefs")||{};p.tone=tone;pSet("emailPrefs",p)}
@@ -1954,14 +1961,14 @@ function closeEditProfile(){document.getElementById("editProfileOverlay").style.
 
 // THEMES
 const THEMES={
-  mohr:{navy:"#1a1a1a",navy2:"#2a2a2a",navy3:"#111111",gold:"#cc0000",gold2:"#e53535",gold3:"#a80000",off:"#f5f5f5",gl:"#e0e0e0",gm:"#9e9e9e",tp:"#1a1a1a",ts:"#555555"},
+  mohr:{navy:"#1a1a1a",navy2:"#2d2d2d",navy3:"#0d0d0d",gold:"#C8272D",gold2:"#d94040",gold3:"#a01f23",off:"#f7f7f7",gl:"#e2e2e2",gm:"#888888",tp:"#1a1a1a",ts:"#555555"},
   black:{navy:"#111111",navy2:"#1a1a1a",navy3:"#000000",gold:"#C8972B",gold2:"#e0aa3e",gold3:"#a07820",off:"#f5f5f5",gl:"#e0e0e0",gm:"#9e9e9e",tp:"#111111",ts:"#555555"},
   dark:{navy:"#002855",navy2:"#003a75",navy3:"#001a38",gold:"#3b82f6",gold2:"#60a5fa",gold3:"#1d4ed8",off:"#f4f6f9",gl:"#e8ecf0",gm:"#b0bec5",tp:"#1a2332",ts:"#546e7a"},
   light:{navy:"#1e293b",navy2:"#334155",navy3:"#0f172a",gold:"#0f766e",gold2:"#0d9488",gold3:"#115e59",off:"#f8fafc",gl:"#e2e8f0",gm:"#94a3b8",tp:"#0f172a",ts:"#475569"}
 };
-function applyTheme(name){const t=THEMES[name]||THEMES.dark;const r=document.documentElement.style;Object.entries(t).forEach(([k,v])=>r.setProperty("--"+k,v));const ps=document.getElementById("profileScreen");if(ps){if(name==="mohr"||name==="black")ps.style.background="linear-gradient(135deg,#000 0%,#111 60%,#000 100%)";else if(name==="light")ps.style.background="linear-gradient(135deg,#e2e8f0 0%,#f8fafc 60%,#e2e8f0 100%)";else ps.style.background="linear-gradient(135deg,#001a38 0%,#002855 60%,#001a38 100%)"}document.querySelectorAll(".theme-opt").forEach(el=>{const active=el.id==="theme-"+name;el.style.borderColor=active?"var(--gold)":"var(--gl)";el.style.boxShadow=active?"0 0 0 3px rgba(200,151,43,.2)":""})}
+function applyTheme(name){const t=THEMES[name]||THEMES.dark;const r=document.documentElement.style;Object.entries(t).forEach(([k,v])=>r.setProperty("--"+k,v));const ps=document.getElementById("profileScreen");if(ps){if(name==="mohr")ps.style.background="linear-gradient(135deg,#0d0d0d 0%,#1a1a1a 50%,#C8272D 100%)";else if(name==="black")ps.style.background="linear-gradient(135deg,#000 0%,#111 60%,#000 100%)";else if(name==="light")ps.style.background="linear-gradient(135deg,#e2e8f0 0%,#f8fafc 60%,#e2e8f0 100%)";else ps.style.background="linear-gradient(135deg,#001a38 0%,#002855 60%,#001a38 100%)"}document.querySelectorAll(".theme-opt").forEach(el=>{const active=el.id==="theme-"+name;el.style.borderColor=active?"var(--gold)":"var(--gl)";el.style.boxShadow=active?"0 0 0 3px rgba(200,151,43,.2)":""})}
 function setTheme(name){pSet("theme",name);applyTheme(name);showToast("Theme updated!")}
-function loadTheme(){applyTheme(pGet("theme")||"dark")}
+function loadTheme(){applyTheme(pGet("theme")||"mohr")}
 
 // AI ASSISTANT
 const AI_SYS="You are an AI assistant in the Mohr Partners BD Command Center. Mohr Partners is the largest tenant representation MBE in the US (tenant rep only, no landlord conflicts). Services: lease admin, CAM audits, BI/site selection, Bill Pay (JP Morgan largest bill pay client), international (CDN Global, Carter Jonas, Citius AG). You know all 50 CORs. Be direct, practical, concise — like a senior BD colleague.";
@@ -3089,6 +3096,166 @@ function saveCorNote(corId, val){
   pSet("cornote_"+corId, val);
 }
 
+var _cpCorId = null;
+
+// ── General Log Touch (Touches tab / Dashboard) ───────────────────────
+function openLogTouchGeneral(){
+  var sel = document.getElementById("ltCo");
+  if(sel) sel.innerHTML = '<option value="">-- No company --</option>'+COS_ALL().map(function(co){return '<option value="'+co.id+'">'+co.name+'</option>';}).join("");
+  var tc = document.getElementById("ltContact"); if(tc) tc.value="";
+  var tn = document.getElementById("ltNotes"); if(tn) tn.value="";
+  var tt = document.getElementById("ltType"); if(tt){tt.value="Email"; renderLTDynamicFields();}
+  document.getElementById("logTouchOverlay").style.display="flex";
+}
+
+function renderLTDynamicFields(){
+  var type=(document.getElementById("ltType")||{}).value||"Email";
+  var el=document.getElementById("ltDynamicFields"); if(!el)return;
+  var inp='width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:9px 13px;font-size:13px;margin-bottom:14px;outline:none';
+  var lbl='display:block;color:var(--gm);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px';
+  if(type==="Email"){
+    el.innerHTML='<label style="'+lbl+'">Subject</label><input type="text" id="ltSubject" placeholder="Email subject..." style="'+inp+'">';
+  } else if(type==="Call"){
+    el.innerHTML='<label style="'+lbl+'">Duration (optional)</label><input type="text" id="ltSubject" placeholder="e.g. 8 min, left voicemail..." style="'+inp+'">';
+  } else if(type==="LinkedIn"){
+    el.innerHTML='<label style="'+lbl+'">Profile URL (optional)</label><input type="text" id="ltSubject" placeholder="linkedin.com/in/..." style="'+inp+'">';
+  } else if(type==="In-Person"){
+    el.innerHTML='<label style="'+lbl+'">Location (optional)</label><input type="text" id="ltSubject" placeholder="e.g. BOMA event, their office..." style="'+inp+'">';
+  } else {
+    el.innerHTML='<input type="hidden" id="ltSubject" value="">';
+  }
+}
+
+function saveLogTouchGeneral(){
+  var coId=(document.getElementById("ltCo")||{}).value||"";
+  var type=(document.getElementById("ltType")||{}).value||"Email";
+  var contact=(document.getElementById("ltContact")||{}).value||"";
+  var subj=(document.getElementById("ltSubject")||{}).value||"";
+  var notes=(document.getElementById("ltNotes")||{}).value||"";
+  var entry={type:type,contact:contact,subject:subj||notes||type+" touch",
+    date:new Date().toISOString(),outcome:"sent",notes:notes};
+  // Save to touches
+  var touches=getTouches();touches.unshift(entry);saveTouches(touches);
+  // Save to company activities if co selected
+  if(coId){
+    var acts=getActivities(coId);acts.unshift(entry);saveActivities(coId,acts);
+  }
+  document.getElementById("logTouchOverlay").style.display="none";
+  showToast("Touch logged \u2714");
+  try{renderTouchPage();}catch(ex){}
+  try{renderDashboard();}catch(ex){}
+}
+
+// ── Call Prep fix ─────────────────────────────────────────────────────
+async function openCallPrep(corId){
+  _cpCorId=corId;
+  var co=COS_ALL().find(function(x){return x.id==corId;});
+  if(!co)return;
+  var apiKey=getAPIKey();
+  if(!apiKey){showToast("Add your API key in Settings first");return;}
+  document.getElementById("cpTitle").textContent=co.name+" \u2014 Call Prep";
+  document.getElementById("cpContent").innerHTML='<div style="display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.6)"><div class="spin"></div>Generating...</div>';
+  document.getElementById("callPrepOverlay").style.display="flex";
+  var notesArr=getNotes?getNotes():[];
+  var coNote=notesArr.find(function(n){return n.corId==corId;});
+  var noteText=coNote?coNote.body:pGet("cornote_"+corId)||"No notes.";
+  var contacts=getContacts(corId).map(function(ct){return ct.name+(ct.role?" ("+ct.role+")":"");}).join(", ");
+  var prompt="You are helping a commercial real estate broker prepare for a cold call.\n\nCompany: "+co.name+"\nCategory: "+co.cat+"\nHQ: "+co.hq+"\nLocations: ~"+co.locs+"\nKey contacts: "+contacts+"\nCompany notes: "+noteText+"\n\nProvide a concise call prep sheet with:\n1. Opening hook (1-2 sentences)\n2. Key pain points to mention\n3. 2-3 qualifying questions\n4. Handle objection: 'We already have a broker'\n5. Ideal next step\n\nKeep it brief and conversational. No fluff.";
+  try{
+    var resp=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+      body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:600,messages:[{role:"user",content:prompt}]})
+    });
+    var data=await resp.json();
+    if(resp.ok){
+      var text=data.content.map(function(b){return b.text||"";}).join("").replace(/\u2014/g,"-").replace(/\u2013/g,"-");
+      document.getElementById("cpContent").textContent=text;
+    } else {
+      document.getElementById("cpContent").textContent="Error: "+(data.error&&data.error.message||"API error");
+    }
+  }catch(err){
+    document.getElementById("cpContent").textContent="Error: "+err.message;
+  }
+}
+
+
+function globalSearchHandler(q){
+  var el=document.getElementById("searchResults"); if(!el)return;
+  if(!q||q.length<2){el.style.display="none";el.innerHTML="";return;}
+  el.style.display="block";
+  q=q.toLowerCase();
+  var results=[];
+  // Search companies
+  COS_ALL().forEach(function(co){
+    if(co.name.toLowerCase().includes(q)||co.hq.toLowerCase().includes(q)){
+      results.push({type:"company",label:co.name,sub:co.cat+" \u00b7 "+co.hq,action:"showPage('email');setTimeout(function(){toggleCOR("+co.id+");},200)"});
+    }
+    // Search contacts
+    getContacts(co.id).forEach(function(ct){
+      if((ct.name||"").toLowerCase().includes(q)||(ct.email||"").toLowerCase().includes(q)){
+        results.push({type:"contact",label:ct.name||"",sub:ct.role+" at "+co.name,action:"showPage('email');setTimeout(function(){toggleCOR("+co.id+");},200)"});
+      }
+    });
+    // Search activities
+    getActivities(co.id).slice(0,20).forEach(function(act){
+      if((act.subject||"").toLowerCase().includes(q)||(act.notes||"").toLowerCase().includes(q)){
+        results.push({type:"activity",label:co.name,sub:(act.type||"Touch")+": "+(act.subject||act.notes||"").slice(0,50),action:"showPage('email');setTimeout(function(){toggleCOR("+co.id+");},200)"});
+      }
+    });
+  });
+  // Search notes
+  getNotes().forEach(function(n){
+    if((n.title||"").toLowerCase().includes(q)||(n.body||"").toLowerCase().includes(q)){
+      results.push({type:"note",label:n.title||"Note",sub:(n.body||"").slice(0,50),action:"showPage('notes')"});
+    }
+  });
+  results=results.slice(0,12);
+  var icons={company:"\uD83C\uDFE2",contact:"\uD83D\uDC64",activity:"\uD83D\uDCCB",note:"\uD83D\uDCDD"};
+  el.innerHTML=results.length
+    ?results.map(function(r){return'<div onclick="'+r.action+';document.getElementById(\'globalSearch\').value=\'\'" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f0f0f0;display:flex;align-items:flex-start;gap:10px" onmouseover="this.style.background=\'#f9f5ef\'" onmouseout="this.style.background=\'\'">'
+      +'<span style="font-size:14px;margin-top:1px">'+icons[r.type]+'</span>'
+      +'<div><div style="font-size:13px;font-weight:600;color:#1a1a1a">'+r.label+'</div>'
+      +'<div style="font-size:11px;color:#888">'+r.sub+'</div></div>'
+      +'</div>';}).join("")
+    :'<div style="padding:12px 14px;color:#888;font-size:12px">No results for "'+q+'"</div>';
+  el.style.display="block";
+}
+
+function weeklyReport(){
+  var today=new Date();
+  var weekStart=new Date(today);weekStart.setDate(today.getDate()-today.getDay()+1);weekStart.setHours(0,0,0,0);
+  var touches=getTouches().filter(function(t){return new Date(t.date)>=weekStart;});
+  var byType={};
+  touches.forEach(function(t){byType[t.type]=(byType[t.type]||0)+1;});
+  var pd=getPipelineData();
+  var meetings=Object.values(pd).filter(function(v){return v==="Meeting Set";}).length;
+  var contacted=Object.values(pd).filter(function(v){return v!=="Cold";}).length;
+  // Top companies touched this week
+  var byCo={};
+  touches.forEach(function(t){if(t.corId){var co=COS_ALL().find(function(x){return x.id==t.corId;});if(co)byCo[co.name]=(byCo[co.name]||0)+1;}});
+  var topCos=Object.entries(byCo).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
+  var typeBreakdown=Object.entries(byType).map(function(e){return e[1]+" "+e[0];}).join(", ")||"None logged";
+  var topStr=topCos.length?topCos.map(function(e){return"- "+e[0]+" ("+e[1]+" touch"+(e[1]>1?"es":"")+")"}).join("\n"):"None this week";
+  var d=function(n){return n.toLocaleDateString("en-US",{month:"short",day:"numeric"});};
+  var report="Weekly BD Update — "+d(weekStart)+" to "+d(today)+"\n"
+    +"=".repeat(45)+"\n\n"
+    +"OUTREACH THIS WEEK\n"
+    +"Total Touches: "+touches.length+" (Goal: 150)\n"
+    +"Breakdown: "+typeBreakdown+"\n\n"
+    +"PIPELINE STATUS\n"
+    +"Total Contacted (all time): "+contacted+" companies\n"
+    +"Meetings Set: "+meetings+"\n\n"
+    +"TOP COMPANIES TOUCHED\n"+topStr+"\n\n"
+    +"NOTES / HIGHLIGHTS\n"
+    +"[Add any key conversations, feedback, or wins here]\n\n"
+    +"Next week I plan to focus on:\n"
+    +"[Add your priorities here]\n\n"
+    +"— Trey Nemeth | BD Associate | Mohr Partners";
+  document.getElementById("weeklyReportContent").value=report;
+  document.getElementById("weeklyReportOverlay").style.display="flex";
+}
+
 function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500)}
 
 window.addEventListener("DOMContentLoaded",async()=>{
@@ -3118,7 +3285,55 @@ window.addEventListener("DOMContentLoaded",async()=>{
 
 });
 </script>
+
+<div class="overlay" id="logTouchOverlay" style="display:none">
+  <div class="add-box" style="width:460px;max-height:90vh;overflow-y:auto">
+    <h2 style="color:#fff;margin-bottom:20px;font-size:18px">📋 Log a Touch</h2>
+    <label style="display:block;color:var(--gm);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">Company</label>
+    <select id="ltCo" style="width:100%;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:8px;color:#fff;padding:9px 13px;font-size:13px;margin-bottom:14px;outline:none"></select>
+    <label style="display:block;color:var(--gm);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">Type</label>
+    <select id="ltType" onchange="renderLTDynamicFields()" style="width:100%;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:8px;color:#fff;padding:9px 13px;font-size:13px;margin-bottom:14px;outline:none">
+      <option>Email</option><option>Call</option><option>LinkedIn</option><option>In-Person</option><option>Other</option>
+    </select>
+    <label style="display:block;color:var(--gm);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">Contact Name</label>
+    <input type="text" id="ltContact" placeholder="e.g. John Smith" style="width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:9px 13px;font-size:13px;margin-bottom:14px;outline:none">
+    <div id="ltDynamicFields"></div>
+    <label style="display:block;color:var(--gm);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">Notes</label>
+    <textarea id="ltNotes" rows="3" placeholder="What happened, next steps..." style="width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:9px 13px;font-size:13px;margin-bottom:16px;outline:none;resize:vertical;font-family:inherit;line-height:1.5"></textarea>
+    <div class="btn-row">
+      <button type="button" class="btn-o" onclick="document.getElementById('logTouchOverlay').style.display='none'">Cancel</button>
+      <button type="button" class="btn-g" onclick="saveLogTouchGeneral()">✓ Save Touch</button>
+    </div>
+  </div>
 </div>
+
+<!-- CALL PREP OVERLAY -->
+<div class="overlay" id="callPrepOverlay" style="display:none">
+  <div class="add-box" style="width:560px;max-height:85vh;overflow-y:auto">
+    <h2 id="cpTitle" style="color:#fff;margin-bottom:18px;font-size:18px">📞 Call Prep</h2>
+    <div id="cpContent" style="color:rgba(255,255,255,.85);font-size:13px;line-height:1.7;white-space:pre-wrap"></div>
+    <div class="btn-row" style="margin-top:20px">
+      <button type="button" class="btn-o" onclick="document.getElementById('callPrepOverlay').style.display='none'">Close</button>
+      <button type="button" class="btn-g" onclick="openLogTouch(_cpCorId)">📋 Log This Call</button>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- WEEKLY REPORT OVERLAY -->
+<div class="overlay" id="weeklyReportOverlay" style="display:none">
+  <div class="add-box" style="width:580px;max-height:85vh;overflow-y:auto">
+    <h2 style="color:#fff;margin-bottom:6px;font-size:18px">&#128196; Weekly Activity Report</h2>
+    <p style="color:var(--gm);font-size:12px;margin-bottom:18px">Summary for Stephen &mdash; copy and paste into an email</p>
+    <textarea id="weeklyReportContent" rows="18" style="width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:12px 14px;font-size:12px;line-height:1.7;outline:none;resize:vertical;font-family:inherit"></textarea>
+    <div class="btn-row" style="margin-top:14px">
+      <button type="button" class="btn-o" onclick="document.getElementById('weeklyReportOverlay').style.display='none'">Close</button>
+      <button type="button" class="btn-g" onclick="var t=document.getElementById('weeklyReportContent');t.select();document.execCommand('copy');showToast('Copied &#10003;')">&#128203; Copy to Clipboard</button>
+    </div>
+  </div>
+</div>
+
 </div>
 </body>
 </html>
