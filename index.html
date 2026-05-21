@@ -230,6 +230,16 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
   <div class="ps-who">Who's working today?</div>
   <div class="profiles-grid" id="profilesGrid"></div>
   <button type="button" onclick="refreshProfilesFromCloud()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);border-radius:8px;padding:8px 18px;font-size:12px;cursor:pointer;margin-top:-10px" id="refreshProfilesBtn">&#8635; Refresh Profiles</button>
+
+  <!-- API Key quick-set — always accessible even if Settings page breaks -->
+  <div style="margin-top:32px;padding:18px 24px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;max-width:440px;width:90%">
+    <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">&#128273; Anthropic API Key</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input type="password" id="ps-apikey" placeholder="sk-ant-api03-..." style="flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:9px 13px;font-size:13px;outline:none" oninput="psShowApiStatus()">
+      <button type="button" onclick="psSaveAPIKey()" style="background:var(--gold);border:none;color:var(--navy3);border-radius:8px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">Save</button>
+    </div>
+    <div id="ps-apiStatus" style="font-size:11px;margin-top:7px;color:rgba(255,255,255,.45)"></div>
+  </div>
 </div>
 
 <div class="overlay" id="pinOverlay" style="display:none">
@@ -868,6 +878,13 @@ function enterApp(profile){
   document.getElementById("dashSub").textContent=profile.name+" \u00b7 Mohr Partners BD Command Center";
   emailQueue=[];openCORId=null;aiHistory=[];notesCurrent=null;
   loadSettings();loadTheme();
+  // Migrate any globally-saved API key into this profile
+  var _gak=localStorage.getItem("global_apikey");
+  if(_gak&&!pGet("apikey")){pSet("apikey",_gak);}
+  // Pre-fill profile screen key input with current key (masked)
+  var _psInp=document.getElementById("ps-apikey");if(_psInp)_psInp.value="";
+  var _psSt=document.getElementById("ps-apiStatus");
+  if(_psSt&&pGet("apikey")){_psSt.style.color="rgba(100,220,100,.8)";_psSt.textContent="✓ API key saved for this profile";}
   const fab=document.getElementById("objFab");if(fab)fab.style.display="flex";
   renderAll();autoReconnectFirebase();
   setTimeout(scheduleAutoNews, 6000); // auto-refresh stale news in background
@@ -1141,7 +1158,7 @@ function setSeqTab(corId,tab){pSet("seqtab_"+corId,tab);const c=COS_ALL().find(c
 function setFollowUp(corId,date){const fus=pGet("followups")||{};fus[corId]=fus[corId]||{};fus[corId].date=date;pSet("followups",fus);renderDashboard()}
 function saveDraftSubj(corId,val){pSet("draft_subj_"+corId,val)}
 function saveDraftBody(corId,tab,val){const b=pGet("draft_bodies_"+corId)||["","",""];b[tab]=val;pSet("draft_bodies_"+corId,b)}
-function getAPIKey(){return pGet("apikey")||""}
+function getAPIKey(){return pGet("apikey")||localStorage.getItem("global_apikey")||""}
 
 let emailFormat="email";
 function setEmailFormat(fmt){emailFormat=fmt;["email","linkedin","call"].forEach(f=>{const el=document.getElementById("fmt-"+f);if(el)el.classList.toggle("on",f===fmt)});const h=document.getElementById("formatHint");if(h)h.textContent={email:"Standard cold email",linkedin:"LinkedIn InMail (shorter)",call:"Call script / talk track"}[fmt]||""}
@@ -2637,6 +2654,32 @@ async function processAutoNewsQueue(){
       newsRenderHistory();
     }
   }
+}
+
+
+function psShowApiStatus(){
+  var val=(document.getElementById("ps-apikey")||{}).value||"";
+  var el=document.getElementById("ps-apiStatus"); if(!el)return;
+  if(!val){el.textContent="";return;}
+  if(val.startsWith("sk-ant-")){el.style.color="rgba(100,220,100,.8)";el.textContent="\u2713 Looks valid";}
+  else{el.style.color="rgba(255,120,100,.8)";el.textContent="Key should start with sk-ant-";}
+}
+
+function psSaveAPIKey(){
+  var val=(document.getElementById("ps-apikey")||{}).value||"";
+  var el=document.getElementById("ps-apiStatus");
+  if(!val.startsWith("sk-ant-")){
+    if(el){el.style.color="rgba(255,120,100,.8)";el.textContent="Key should start with sk-ant-api...";}
+    return;
+  }
+  // Save to all profiles' localStorage using the global pKey approach
+  // Since we may not be logged in yet, save to a global key that getAPIKey() also checks
+  localStorage.setItem("global_apikey", val);
+  // Also pre-fill the settings input if it exists
+  var si=document.getElementById("set-apikey"); if(si)si.value=val;
+  if(el){el.style.color="rgba(100,220,100,.8)";el.textContent="\u2713 Saved! You can now log in.";}
+  // Show current key masked
+  var inp=document.getElementById("ps-apikey"); if(inp)inp.value="";
 }
 
 
