@@ -815,7 +815,6 @@ function saveProfiles(p){localStorage.setItem("profiles",JSON.stringify(p))}
 function getCustomCORs(){return pGet("customCORs")||[]}
 function saveCustomCORs(c){pSet("customCORs",c)}
 function COS_ALL(){return[...COS,...getCustomCORs()]}
-function getNewsCache(){try{return JSON.parse(localStorage.getItem("shared_newsCache"))||{}}catch(e){return{}}}
 
 function renderProfileScreen(){
   const profiles=getProfiles();
@@ -893,18 +892,6 @@ function renderAll(){renderDashboard();renderCORs();renderPipeMini();renderDashb
 function getPipelineData(){return pGet("pipeline")||{}}
 function setStageCOR(corId,stage){const d=getPipelineData();d[corId]=stage;pSet("pipeline",d);renderPipeMini();renderDashboard()}
 
-function renderDashboard(){
-  const pd=getPipelineData();const counts={};STAGES.forEach(s=>counts[s]=0);Object.values(pd).forEach(s=>{if(counts[s]!==undefined)counts[s]++});
-  const total=COS_ALL().length,contacted=total-(counts["Cold"]||0),meetings=(counts["Meeting Set"]||0)+(counts["Active Opp"]||0)+(counts["Closed"]||0);
-  document.getElementById("statsRow").innerHTML=[
-    {label:"Total Targets",val:total,sub:"Companies",cls:""},
-    {label:"Contacted",val:contacted,sub:"At least one touch",cls:"blue"},
-    {label:"Not Contacted",val:counts["Cold"]||0,sub:"Need first outreach",cls:"red"},
-    {label:"Meetings Set",val:meetings,sub:"Active or closed",cls:"green"},
-    {label:"Queued",val:emailQueue.length,sub:"Ready to send",cls:"purple"},
-  ].map(s=>`<div class="scard ${s.cls}"><div class="sl">${s.label}</div><div class="sv">${s.val}</div><div class="ss">${s.sub}</div></div>`).join("");
-  renderPipeMini();renderFollowUps();renderRecentOutreach();
-}
 
 function renderRecentOutreach(){
   var el=document.getElementById("recentOutreach");if(!el)return;
@@ -1350,7 +1337,7 @@ function getTouches(){return pGet("touches")||[]}
 function saveTouches(t){pSet("touches",t)}
 function getWeekStart(date){const d=new Date(date||Date.now());const day=d.getDay();const mon=new Date(d.setDate(d.getDate()-day+(day===0?-6:1)));mon.setHours(0,0,0,0);return mon}
 function getWeekTouches(ws){const weekStart=ws||getWeekStart();const we=new Date(weekStart);we.setDate(we.getDate()+7);return getTouches().filter(t=>{const d=new Date(t.date);return d>=weekStart&&d<we})}
-function openLogTouch(){document.getElementById("ltCo").innerHTML='<option value="">-- No specific company --</option>'+COS_ALL().map(c=>`<option value="${c.id}">${c.name}</option>`).join("");["ltContact","ltNotes"].forEach(id=>document.getElementById(id).value="");document.getElementById("ltType").value="Email";document.getElementById("logTouchOverlay").style.display="flex"}
+function openLogTouchGeneral(){document.getElementById("ltCo").innerHTML='<option value="">-- No specific company --</option>'+COS_ALL().map(c=>`<option value="${c.id}">${c.name}</option>`).join("");["ltContact","ltNotes"].forEach(id=>document.getElementById(id).value="");document.getElementById("ltType").value="Email";document.getElementById("logTouchOverlay").style.display="flex"}
 function closeLogTouch(){document.getElementById("logTouchOverlay").style.display="none"}
 function saveTouch(){const type=document.getElementById("ltType").value;const corId=document.getElementById("ltCo").value;const contact=document.getElementById("ltContact").value;const notes=document.getElementById("ltNotes").value;const co=corId?COS_ALL().find(c=>c.id==corId):null;const touches=getTouches();touches.push({id:Date.now(),date:new Date().toISOString(),type,corId:corId||null,company:co?co.name:"",contact,notes});saveTouches(touches);closeLogTouch();renderTouchPage();renderDashboardTouchWidget();showToast("Touch logged! "+getWeekTouches().length+" this week")}
 function renderTouchPage(){
@@ -1732,6 +1719,41 @@ function loadSettings(){
 function saveProfileSettings(){const s={};["name","title","email","phone"].forEach(k=>s[k]=(document.getElementById("set-"+k)||{}).value||"");pSet("profileSettings",s);showToast("Profile saved!")}
 function saveEmailPrefs(){const p=pGet("emailPrefs")||{};p.angle=(document.getElementById("set-angle")||{}).value||"Lease Admin";pSet("emailPrefs",p);showToast("Preferences saved!")}
 function saveSig(){pSet("signature",(document.getElementById("set-sig")||{}).value||"");showToast("Signature saved!")}
+async function testAPIKey(){
+  var key=getAPIKey();
+  var el=document.getElementById("apiTestResult");
+  if(!el)return;
+  if(!key){
+    el.style.display="block";el.style.background="rgba(198,40,40,.08)";el.style.color="#c62828";
+    el.textContent="No API key saved. Enter your key above and click Save first.";
+    return;
+  }
+  el.style.display="block";el.style.background="rgba(0,40,85,.06)";el.style.color="var(--ts)";
+  el.textContent="Testing key...";
+  try{
+    var resp=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+      body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:10,messages:[{role:"user",content:"Say OK"}]})
+    });
+    var data=await resp.json();
+    if(resp.ok){
+      el.style.background="rgba(46,125,50,.08)";el.style.color="#2e7d32";
+      el.textContent="\u2713 API key is working. You have credits available.";
+    } else {
+      var msg=(data.error&&data.error.message)||"Unknown error";
+      var isCredit=/credit|billing|quota|limit|balance/i.test(msg);
+      el.style.background="rgba(198,40,40,.08)";el.style.color="#c62828";
+      el.textContent=(isCredit
+        ? "\u26a0\ufe0f Out of credits: "+msg+". Go to console.anthropic.com to add credits."
+        : "\u274c Key error ("+resp.status+"): "+msg);
+    }
+  }catch(e){
+    el.style.background="rgba(198,40,40,.08)";el.style.color="#c62828";
+    el.textContent="\u274c Connection error: "+e.message;
+  }
+}
+
 function saveAPIKey(){const v=(document.getElementById("set-apikey")||{}).value.trim();if(!v.startsWith("sk-ant-")){const ks=document.getElementById("keyStatus");ks.className="key-status bad";ks.textContent="Key must start with sk-ant-";return}pSet("apikey",v);document.getElementById("set-apikey").value=v.slice(0,18)+"\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022";const ks=document.getElementById("keyStatus");ks.className="key-status ok";ks.textContent="\u2713 Key saved";showToast("API key saved!")}
 function renderProfileMgmt(){document.getElementById("profileMgmtList").innerHTML=getProfiles().map((p,i)=>`<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--gl)"><div class="pa c${p.color}" style="width:36px;height:36px;border-radius:6px;font-size:13px">${p.name.slice(0,2).toUpperCase()}</div><div style="flex:1"><div style="font-size:14px;font-weight:600;color:var(--navy)">${p.name}</div><div style="font-size:12px;color:var(--ts)">${p.title||"BD Associate"}</div></div><button type="button" onclick="deleteProfileAt(${i})" style="background:none;border:1px solid var(--gl);border-radius:6px;padding:5px 10px;color:var(--gm);cursor:pointer;font-size:12px;font-family:inherit">Remove</button></div>`).join("")}
 function deleteProfileAt(i){const p=getProfiles();p.splice(i,1);saveProfiles(p);renderProfileMgmt();renderProfileScreen()}
