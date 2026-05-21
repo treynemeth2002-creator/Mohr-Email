@@ -219,6 +219,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .theme-opt{border:2px solid var(--gl);border-radius:12px;padding:16px 10px;cursor:pointer;text-align:center;transition:all .2s}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script type="module" id="firebaseModule"></script>
 </head>
 <body>
@@ -347,6 +348,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
       <span id="syncDot" style="width:7px;height:7px;border-radius:50%;background:#4caf50;flex-shrink:0"></span>
       <span id="syncTxt">Synced</span>
     </div>
+    <button type="button" onclick="exportToExcel()" title="Export to Excel" style="background:rgba(200,151,43,.18);border:1px solid rgba(200,151,43,.45);color:var(--gold2);border-radius:6px;padding:4px 11px;font-size:11px;font-weight:700;cursor:pointer;margin-right:4px">&#8595; Excel</button>
     <button type="button" class="nav-alert" onclick="showPage('dashboard',document.querySelector('.ntab'))">&#128276;<span class="alert-dot" id="alertDot" style="display:none"></span></button>
     <div class="nav-user" onclick="logout()">
       <div class="nav-av" id="navAv"></div>
@@ -2237,6 +2239,149 @@ function removeContactItem2(corId, idx){
   var sel = pGet("selContacts_"+corId)||[];
   pSet("selContacts_"+corId, sel.slice(0, contacts.length));
   renderContactsDisplay(corId);
+}
+
+
+// ════════════════════════════════════════════════════════════════
+// EXPORT TO EXCEL
+// ════════════════════════════════════════════════════════════════
+function exportToExcel(){
+  if(typeof XLSX === "undefined"){
+    showToast("SheetJS not loaded yet — try again in a moment");
+    return;
+  }
+  var wb = XLSX.utils.book_new();
+
+  // ── Sheet 1: Activity Log ───────────────────────────────────────
+  var actRows = [
+    ["MOHR PARTNERS — BD ACTIVITY LOG"],
+    ["Exported: " + new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})],
+    [],
+    ["Date","Company","Category","Contact Name","Title","Email","Method","Subject Line","Outcome","Email Body / Notes"]
+  ];
+
+  var pd = getPipelineData();
+  var allActs = [];
+  COS_ALL().forEach(function(co){
+    var acts = getActivities(co.id);
+    acts.forEach(function(a){
+      allActs.push({co:co, a:a, date: new Date(a.date||0)});
+    });
+  });
+  // Sort newest first
+  allActs.sort(function(x,y){return y.date - x.date;});
+
+  allActs.forEach(function(item){
+    var a = item.a; var co = item.co;
+    var dateStr = a.date ? new Date(a.date).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : "";
+    var outcomeLabels = {sent:"Sent",responded:"Responded",meeting:"Meeting Set",noreply:"No Reply",voicemail:"Voicemail",notinterested:"Not Interested"};
+    actRows.push([
+      dateStr,
+      co.name,
+      co.cat||"",
+      a.contact||"",
+      a.contactRole||"",
+      "",               // email — not stored on activity
+      a.type||"Email",
+      a.subject||"",
+      outcomeLabels[a.outcome]||a.outcome||"",
+      a.body||""
+    ]);
+  });
+
+  var wsAct = XLSX.utils.aoa_to_sheet(actRows);
+
+  // Style column widths
+  wsAct["!cols"] = [
+    {wch:14},{wch:28},{wch:16},{wch:22},{wch:22},{wch:28},
+    {wch:12},{wch:45},{wch:16},{wch:60}
+  ];
+  XLSX.utils.book_append_sheet(wb, wsAct, "Activity Log");
+
+  // ── Sheet 2: Pipeline (all 50 CORs, current state) ──────────────
+  var fus = pGet("followups")||{};
+  var pipeRows = [
+    ["MOHR PARTNERS — BD PIPELINE"],
+    ["Exported: " + new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})],
+    [],
+    ["#","Company","Category","Locations","HQ","Stage","Primary Contact","Title","Email","Last Outreach","Method","Follow-Up Date","Touches","Subject Last Sent","Notes"]
+  ];
+
+  COS_ALL().forEach(function(co){
+    var stage = pd[co.id]||"Cold";
+    var acts = getActivities(co.id);
+    var lastAct = acts[0]||null;
+    var contacts = getContacts(co.id);
+    var sel = pGet("selContacts_"+co.id)||[];
+    var primary = contacts.find(function(ct){return sel.includes(ct.email||ct.name);})||contacts[0]||{};
+    var fu = fus[co.id]||{};
+    var lastDate = lastAct ? new Date(lastAct.date).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : "";
+    var fuDate   = fu.date   ? new Date(fu.date).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : "";
+    pipeRows.push([
+      co.id,
+      co.name,
+      co.cat||"",
+      co.locs||"",
+      co.hq||"",
+      stage,
+      primary.name||"",
+      primary.role||"",
+      primary.email||"",
+      lastDate,
+      lastAct?lastAct.type:"",
+      fuDate,
+      acts.length,
+      lastAct?lastAct.subject:"",
+      pGet("notes_"+co.id)||""
+    ]);
+  });
+
+  var wsPipe = XLSX.utils.aoa_to_sheet(pipeRows);
+  wsPipe["!cols"] = [
+    {wch:4},{wch:28},{wch:16},{wch:10},{wch:18},{wch:14},
+    {wch:22},{wch:22},{wch:28},{wch:14},{wch:10},{wch:14},
+    {wch:8},{wch:40},{wch:35}
+  ];
+  XLSX.utils.book_append_sheet(wb, wsPipe, "Pipeline");
+
+  // ── Sheet 3: Summary stats ───────────────────────────────────────
+  var stageCounts = {};
+  STAGES.forEach(function(s){stageCounts[s]=0;});
+  COS_ALL().forEach(function(co){
+    var s = pd[co.id]||"Cold";
+    stageCounts[s] = (stageCounts[s]||0)+1;
+  });
+
+  var totalActs = 0; var thisWeek = 0;
+  var weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate()-7);
+  COS_ALL().forEach(function(co){
+    var acts = getActivities(co.id);
+    totalActs += acts.length;
+    acts.forEach(function(a){if(new Date(a.date||0)>weekAgo)thisWeek++;});
+  });
+
+  var sumRows = [
+    ["PIPELINE SUMMARY"],
+    ["Generated: " + new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})],
+    [],
+    ["Stage","Count"],
+  ];
+  STAGES.forEach(function(s){ sumRows.push([s, stageCounts[s]||0]); });
+  sumRows.push([]);
+  sumRows.push(["Total Touchpoints Logged", totalActs]);
+  sumRows.push(["Touchpoints This Week",    thisWeek]);
+  sumRows.push(["Total Companies Tracked",  COS_ALL().length]);
+  sumRows.push(["Companies Contacted",      COS_ALL().filter(function(co){return (pd[co.id]||"Cold")!=="Cold";}).length]);
+
+  var wsSum = XLSX.utils.aoa_to_sheet(sumRows);
+  wsSum["!cols"] = [{wch:28},{wch:12}];
+  XLSX.utils.book_append_sheet(wb, wsSum, "Summary");
+
+  // ── Download ─────────────────────────────────────────────────────
+  var dateTag = new Date().toISOString().split("T")[0];
+  var fileName = "Mohr_BD_Tracker_"+dateTag+".xlsx";
+  XLSX.writeFile(wb, fileName);
+  showToast("Exported: "+fileName);
 }
 
 
