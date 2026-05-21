@@ -391,16 +391,16 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
     </div>
   </div>
   <div class="dash-grid">
-    <div class="card"><div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:14px">&#128197; Follow-Up Queue</div><div id="fuList"><div style="color:var(--gm);font-size:12px">No follow-ups set yet.</div></div></div>
-    <div class="card"><div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:14px">&#128200; Pipeline Overview</div><div class="pipe-mini" id="pipeMini"></div></div>
+    <div class="card"><div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">&#128197; Follow-Ups<button type="button" onclick="showPage('followups',document.querySelectorAll('.ntab')[7])" style="background:none;border:none;font-size:10px;color:var(--gold3);cursor:pointer;font-weight:600;text-decoration:underline">All &#8250;</button></div><div id="fuList"><div style="color:var(--gm);font-size:12px">No follow-ups set yet.</div></div></div>
+    <div class="card"><div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">&#128200; Pipeline<button type="button" onclick="showPage('pipeline',document.querySelectorAll('.ntab')[2])" style="background:none;border:none;font-size:10px;color:var(--gold3);cursor:pointer;font-weight:600;text-decoration:underline">Full view &#8250;</button></div><div class="pipe-mini" id="pipeMini"></div></div>
   </div>
-  <!-- Recent Outreach -->
+  <!-- Recent Outreach strip — compact, links to Touches tab -->
   <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden;margin-bottom:20px">
-    <div style="padding:14px 18px;border-bottom:1px solid var(--gl);display:flex;align-items:center;justify-content:space-between">
+    <div style="padding:12px 18px;border-bottom:1px solid var(--gl);display:flex;align-items:center;justify-content:space-between">
       <span style="font-size:13px;font-weight:700;color:var(--navy)">&#128200; Recent Outreach</span>
-      <span style="font-size:11px;color:var(--ts)">Last touchpoint per company</span>
+      <button type="button" onclick="showPage('touches',document.querySelectorAll('.ntab')[4])" style="background:none;border:none;font-size:11px;color:var(--gold3);cursor:pointer;font-weight:600;text-decoration:underline">View all &#8250;</button>
     </div>
-    <div id="recentOutreach" style="max-height:320px;overflow-y:auto"></div>
+    <div id="recentOutreach" style="max-height:220px;overflow-y:auto"></div>
   </div>
 </div>
 
@@ -803,6 +803,16 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
     <label style="display:block;color:var(--gm);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">Subject / Notes</label>
     <input type="text" id="ltc-subject" placeholder="Email subject or notes..." style="width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:9px 13px;font-size:13px;margin-bottom:14px;outline:none">
 
+    <label style="display:block;color:var(--gm);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">Move to Stage</label>
+    <select id="ltc-stage" style="width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:9px 13px;font-size:13px;margin-bottom:14px;outline:none">
+      <option value="">— Keep current stage —</option>
+      <option value="Contacted">Contacted</option>
+      <option value="Responded">Responded</option>
+      <option value="Meeting Set">Meeting Set</option>
+      <option value="Active Opp">Active Opp</option>
+      <option value="Closed">Closed</option>
+    </select>
+
     <div style="background:rgba(200,151,43,.08);border:1px solid rgba(200,151,43,.2);border-radius:8px;padding:14px;margin-bottom:16px">
       <div style="font-size:11px;font-weight:700;color:var(--gold2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">&#128197; Schedule Follow-Up</div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -1002,6 +1012,7 @@ function enterApp(profile){
   loadSettings();loadTheme();
   const fab=document.getElementById("objFab");if(fab)fab.style.display="flex";
   renderAll();autoReconnectFirebase();
+  setTimeout(scheduleAutoNews, 6000); // auto-refresh stale news in background
 }
 function logout(){currentProfile=null;openCORId=null;emailQueue=[];aiHistory=[];document.getElementById("mainApp").style.display="none";document.getElementById("profileScreen").style.display="flex";renderProfileScreen()}
 
@@ -1883,6 +1894,13 @@ function openLogTouch(corId){
   // Default outcome: sent, type: Email
   document.getElementById("ltc-type").value="Email";
   document.getElementById("ltc-outcome").value="sent";
+  // Pre-fill stage: default to Contacted unless already past that
+  var _curStage=getPipelineData()[corId]||"Cold";
+  var _stageEl=document.getElementById("ltc-stage");
+  if(_stageEl){
+    // If Cold suggest Contacted, otherwise leave blank (keep current)
+    _stageEl.value=_curStage==="Cold"?"Contacted":"";
+  }
   // Default follow-up: +7 days
   setLTCFollowup(7);
   document.getElementById("logTouchCOROverlay").style.display="flex";
@@ -1926,9 +1944,12 @@ function saveLogTouchCOR(){
     pSet("followups",fus);
   }
 
-  // Move to Contacted if still Cold
+  // Move to selected stage (or Contacted if Cold and nothing chosen)
+  var _newStage=document.getElementById("ltc-stage")?document.getElementById("ltc-stage").value:"";
   var pd2=getPipelineData();
-  if((pd2[_ltcCorId]||"Cold")==="Cold"){setStageCOR(_ltcCorId,"Contacted");}
+  var _curSt=pd2[_ltcCorId]||"Cold";
+  if(_newStage){setStageCOR(_ltcCorId,_newStage);}
+  else if(_curSt==="Cold"){setStageCOR(_ltcCorId,"Contacted");}
 
   // Write to Touches store so Touches tab counts it
   var touches=getTouches();
@@ -2391,6 +2412,103 @@ function exportToExcel(){
 }
 
 
+// ════════════════════════════════════════════════════════════════
+// AUTO NEWS REFRESH — runs silently on app load, max 20hrs stale
+// ════════════════════════════════════════════════════════════════
+var _autoNewsQueue = [];
+var _autoNewsRunning = false;
+var AUTO_NEWS_STALE_HOURS = 20;
+
+function scheduleAutoNews(){
+  if(window._autoNewsScheduled) return;
+  window._autoNewsScheduled = true;
+  var apiKey = getAPIKey();
+  if(!apiKey) return; // no API key = skip
+
+  var cache = getNewsCache();
+  var now = Date.now();
+  var staleMs = AUTO_NEWS_STALE_HOURS * 60 * 60 * 1000;
+
+  // Queue companies that have no articles OR last fetched >20hrs ago
+  _autoNewsQueue = COS_ALL().filter(function(co){
+    var entry = cache[co.id];
+    if(!entry || !entry.lastArticles) return true; // never fetched
+    return (now - new Date(entry.lastArticles)) > staleMs;
+  }).map(function(co){ return co.id; });
+
+  if(!_autoNewsQueue.length) return;
+
+  // Show subtle indicator
+  showAutoNewsIndicator(_autoNewsQueue.length);
+
+  // Process queue with delay between calls to avoid rate limits
+  setTimeout(processAutoNewsQueue, 3000);
+}
+
+function showAutoNewsIndicator(count){
+  var el = document.getElementById("autoNewsIndicator");
+  if(!el){
+    el = document.createElement("div");
+    el.id = "autoNewsIndicator";
+    el.style.cssText = "position:fixed;bottom:18px;left:18px;background:var(--navy);color:rgba(255,255,255,.8);font-size:11px;font-weight:600;padding:7px 14px;border-radius:20px;z-index:9999;display:flex;align-items:center;gap:7px;box-shadow:0 4px 16px rgba(0,0,0,.25)";
+    document.body.appendChild(el);
+  }
+  el.style.display = "flex";
+  el.innerHTML = '<div class="spin" style="width:10px;height:10px;border-width:1.5px"></div> Auto-refreshing news (' + count + ' companies)';
+}
+
+function hideAutoNewsIndicator(){
+  var el = document.getElementById("autoNewsIndicator");
+  if(el) el.style.display = "none";
+}
+
+async function processAutoNewsQueue(){
+  if(_autoNewsRunning || !_autoNewsQueue.length){ hideAutoNewsIndicator(); return; }
+  _autoNewsRunning = true;
+
+  var corId = _autoNewsQueue.shift();
+  var co = COS_ALL().find(function(x){ return x.id == corId; });
+  if(!co){ _autoNewsRunning = false; setTimeout(processAutoNewsQueue, 500); return; }
+
+  var remaining = _autoNewsQueue.length;
+  var indicator = document.getElementById("autoNewsIndicator");
+  if(indicator) indicator.innerHTML = '<div class="spin" style="width:10px;height:10px;border-width:1.5px"></div> Refreshing news: ' + co.name + (remaining ? ' (+' + remaining + ')' : '');
+
+  try{
+    var articles = await fetchCompanyNews(co.name);
+    if(articles && articles.length){
+      var cache = getNewsCache();
+      if(!cache[co.id]) cache[co.id] = {scanned:null, text:null, company:co.name};
+      cache[co.id].lastArticles = new Date().toISOString();
+      cache[co.id].articles = articles.slice(0,10).map(function(a){
+        return {title:a.title, source:a.source, date:a.relTime||a.date, url:a.url};
+      });
+      localStorage.setItem("shared_newsCache", JSON.stringify(cache));
+
+      // If user is on news page looking at this company, refresh the feed
+      if(_newsCurCOR && _newsCurCOR.id == corId){
+        renderNewsArticles(articles);
+      }
+    }
+  } catch(e){
+    // Silently fail — don't bother the user
+  }
+
+  _autoNewsRunning = false;
+
+  if(_autoNewsQueue.length){
+    // Stagger requests: 4 seconds apart to avoid rate limiting
+    setTimeout(processAutoNewsQueue, 4000);
+  } else {
+    hideAutoNewsIndicator();
+    // Refresh news history if on news page
+    if(document.getElementById("page-news") && document.getElementById("page-news").classList.contains("active")){
+      newsRenderHistory();
+    }
+  }
+}
+
+
 function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500)}
 
 window.addEventListener("DOMContentLoaded",async()=>{
@@ -2398,6 +2516,8 @@ window.addEventListener("DOMContentLoaded",async()=>{
   if(fbCfg){try{const cfg=JSON.parse(fbCfg);const{initializeApp,getApps}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");const{getFirestore,doc,getDoc}=await importFS();const existing=getApps().find(a=>a.options.projectId===cfg.projectId);const app=existing||initializeApp(cfg,cfg.projectId);const db=getFirestore(app);const pd=await getDoc(doc(db,"bd_data","_profiles"));if(pd.exists()){const cp=JSON.parse(pd.data().value||"[]");if(cp.length)saveProfiles(cp)}}catch(e){console.warn("Pre-load failed:",e)}}
   if(!getProfiles().length)saveProfiles([{name:"Trey Nemeth",title:"BD Associate",pin:"",color:0}]);
   renderProfileScreen();
+  // Schedule auto-news background refresh after login
+  window._autoNewsScheduled = false;
 });
 </script>
 </body>
