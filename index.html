@@ -957,6 +957,7 @@ function enterApp(profile){
   console.log("mainApp style set to:", ma.style.cssText);
   var td=document.getElementById("loginTestDiv");
   if(td){td.style.display="block";td.onclick=function(){this.style.display="none";};}
+  console.log("test div shown");
   // Set nav user info
   var av=document.getElementById("navAv");
   if(av){av.className="nav-av c"+profile.color;av.textContent=profile.name.slice(0,2).toUpperCase();}
@@ -965,8 +966,11 @@ function enterApp(profile){
   // Reset state
   emailQueue=[];openCORId=null;aiHistory=[];notesCurrent=null;
   // Load settings/theme (silent fail)
-  try{loadSettings();}catch(e){}
-  try{loadTheme();}catch(e){}
+  console.log("calling loadSettings");
+  try{loadSettings();}catch(e){console.error("loadSettings error:",e);}
+  console.log("calling loadTheme");
+  try{loadTheme();}catch(e){console.error("loadTheme error:",e);}
+  console.log("showing dashboard page");
   // Show dashboard - use inline style so nothing can override it
   document.querySelectorAll(".page").forEach(function(p){
     p.style.display="none";
@@ -980,7 +984,9 @@ function enterApp(profile){
   // Show AI fab
   var fab=document.getElementById("aiFab"); if(fab)fab.style.display="flex";
   // Render everything (each wrapped so one failure doesn't stop others)
+  console.log("calling renderDashboard");
   try{renderDashboard();}catch(e){console.error("renderDashboard",e);}
+  console.log("enterApp complete");
   try{renderCORs();}catch(e){console.error("renderCORs",e);}
   try{renderPipeMini();}catch(e){console.error("renderPipeMini",e);}
   try{renderDashboardTouchWidget();}catch(e){console.error("renderDashboardTouchWidget",e);}
