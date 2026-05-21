@@ -349,7 +349,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
     <button type="button" class="ntab" onclick="showPage('news',this)">&#128240; News</button>
     <button type="button" class="ntab" onclick="showPage('touches',this)">&#127919; Touches</button>
     <button type="button" class="ntab" onclick="showPage('notes',this)">&#128221; Notes</button>
-    <button type="button" class="ntab" onclick="showPage('winloss',this)">&#127942; Win/Loss</button>
     <button type="button" class="ntab" onclick="showPage('followups',this)">&#128197; Follow-Ups</button>
     <button type="button" class="ntab" onclick="showPage('settings',this)">&#9881; Settings</button>
   </div>
@@ -500,6 +499,41 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
     <div style="font-size:11px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Previously Loaded</div>
     <div id="newsHistory" style="display:flex;flex-direction:column;gap:8px"></div>
   </div>
+</div>
+
+<div class="page" id="page-notes">
+  <div class="ph">
+    <div><div class="pt">Notes</div><div class="ps2">Company-specific notes and research</div></div>
+    <div style="display:flex;gap:8px">
+      <select class="fs" id="notesCo" style="width:auto" onchange="renderNoteList()">
+        <option value="">All Companies</option>
+      </select>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:280px 1fr;gap:20px;height:calc(100vh - 160px)">
+    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden;display:flex;flex-direction:column">
+      <div style="padding:14px 16px;border-bottom:1px solid var(--gl);display:flex;gap:8px">
+        <input type="text" id="noteSrch" class="si" placeholder="Search notes..." style="flex:1;font-size:12px" oninput="renderNoteList()">
+        <button type="button" class="act-btn" onclick="newNote()" style="padding:5px 10px;font-size:11px;white-space:nowrap">+ New</button>
+      </div>
+      <div id="noteList" style="overflow-y:auto;flex:1"></div>
+    </div>
+    <div id="noteEditor" style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);padding:24px;display:flex;flex-direction:column">
+      <div id="noteEditorEmpty" style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--gm);font-size:13px">Select a note or click + New to start</div>
+      <div id="noteEditorContent" style="display:none;flex-direction:column;height:100%">
+        <div style="display:flex;gap:10px;margin-bottom:14px;align-items:center">
+          <input type="text" id="noteTitleInput" placeholder="Note title..." style="flex:1;border:none;border-bottom:2px solid var(--gl);padding:6px 0;font-size:16px;font-weight:700;color:var(--navy);outline:none;background:transparent">
+          <select id="noteCoInput" class="fs" style="width:auto;font-size:12px">
+            <option value="">No company</option>
+          </select>
+          <button type="button" onclick="deleteNote()" style="background:none;border:none;color:#c62828;cursor:pointer;font-size:18px" title="Delete note">&#128465;</button>
+        </div>
+        <textarea id="noteBodyInput" placeholder="Start typing..." style="flex:1;border:1.5px solid var(--gl);border-radius:8px;padding:14px;font-size:13px;line-height:1.7;color:var(--tp);outline:none;resize:none;font-family:inherit" oninput="autoSaveNote()"></textarea>
+        <div style="font-size:10px;color:var(--gm);margin-top:8px" id="noteAutoSaveStatus">Changes saved automatically</div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="page" id="page-followups">
   <div class="ph">
@@ -515,8 +549,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
 
   <!-- View toggle tabs -->
   <div style="display:flex;gap:0;background:#fff;border-radius:10px;padding:4px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:20px;width:fit-content">
-    <button type="button" id="fuTabDate" onclick="switchFUTab('date')" style="padding:7px 20px;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;background:var(--navy);color:#fff;transition:all .15s">&#128197; By Date</button>
-    <button type="button" id="fuTabStage" onclick="switchFUTab('stage')" style="padding:7px 20px;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;background:transparent;color:var(--ts);transition:all .15s">&#128200; By Stage</button>
+    <button type="button" id="fuTabDate" onclick="switchFUTab('date')" style="padding:7px 18px;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;background:var(--navy);color:#fff;transition:all .15s">&#128197; By Date</button>
+    <button type="button" id="fuTabStage" onclick="switchFUTab('stage')" style="padding:7px 18px;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;background:transparent;color:var(--ts);transition:all .15s">&#128200; By Stage</button>
+    <button type="button" id="fuTabCal" onclick="switchFUTab('calendar')" style="padding:7px 18px;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;background:transparent;color:var(--ts);transition:all .15s">&#128468; Calendar</button>
   </div>
 
   <!-- By Date view -->
@@ -531,6 +566,16 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy3);color:v
   <!-- By Stage view -->
   <div id="fuStageView" style="display:none">
     <div id="fuStageContent"></div>
+  </div>
+
+  <!-- Calendar view -->
+  <div id="fuCalView" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <button type="button" onclick="fuCalPrev()" style="background:#fff;border:1.5px solid var(--gl);border-radius:8px;padding:7px 14px;font-size:13px;cursor:pointer">&#8249;</button>
+      <div id="fuCalTitle" style="font-size:16px;font-weight:700;color:var(--navy)"></div>
+      <button type="button" onclick="fuCalNext()" style="background:#fff;border:1.5px solid var(--gl);border-radius:8px;padding:7px 14px;font-size:13px;cursor:pointer">&#8250;</button>
+    </div>
+    <div id="fuCalGrid"></div>
   </div>
 </div>
 
@@ -2241,13 +2286,18 @@ var _fuTab = "date";
 
 function switchFUTab(tab){
   _fuTab = tab;
-  document.getElementById("fuDateView").style.display  = tab==="date"  ? "block" : "none";
-  document.getElementById("fuStageView").style.display = tab==="stage" ? "block" : "none";
-  var btnDate  = document.getElementById("fuTabDate");
-  var btnStage = document.getElementById("fuTabStage");
-  if(btnDate){btnDate.style.background  = tab==="date"  ? "var(--navy)" : "transparent"; btnDate.style.color  = tab==="date"  ? "#fff" : "var(--ts)";}
-  if(btnStage){btnStage.style.background = tab==="stage" ? "var(--navy)" : "transparent"; btnStage.style.color = tab==="stage" ? "#fff" : "var(--ts)";}
-  if(tab==="stage") renderFUStageView();
+  document.getElementById("fuDateView").style.display    = tab==="date"     ? "block" : "none";
+  document.getElementById("fuStageView").style.display   = tab==="stage"    ? "block" : "none";
+  var calEl=document.getElementById("fuCalView");if(calEl)calEl.style.display=tab==="calendar"?"block":"none";
+  var btnDate=document.getElementById("fuTabDate");
+  var btnStage=document.getElementById("fuTabStage");
+  var btnCal=document.getElementById("fuTabCal");
+  [["fuTabDate","date"],["fuTabStage","stage"],["fuTabCal","calendar"]].forEach(function(pair){
+    var btn=document.getElementById(pair[0]);
+    if(btn){btn.style.background=tab===pair[1]?"var(--navy)":"transparent";btn.style.color=tab===pair[1]?"#fff":"var(--ts)";}
+  });
+  if(tab==="stage")renderFUStageView();
+  if(tab==="calendar")renderFUCalendar();
 }
 
 function renderFUStageView(){
@@ -2680,6 +2730,187 @@ function psSaveAPIKey(){
   if(el){el.style.color="rgba(100,220,100,.8)";el.textContent="\u2713 Saved! You can now log in.";}
   // Show current key masked
   var inp=document.getElementById("ps-apikey"); if(inp)inp.value="";
+}
+
+
+// ════════════════════════════════════════════════════════════════
+// NOTES
+// ════════════════════════════════════════════════════════════════
+var _noteAutoSaveTimer = null;
+
+function getNotes(){ try{return JSON.parse(localStorage.getItem(pKey("notes")))||[];}catch(e){return[];} }
+function saveNotes(arr){ localStorage.setItem(pKey("notes"),JSON.stringify(arr)); }
+
+function renderNoteList(){
+  var q = ((document.getElementById("noteSrch")||{}).value||"").toLowerCase();
+  var coFilter = (document.getElementById("notesCo")||{}).value||"";
+  var notes = getNotes().filter(function(n){
+    return(!q||(n.title||"").toLowerCase().includes(q)||(n.body||"").toLowerCase().includes(q))
+      &&(!coFilter||n.corId==coFilter);
+  });
+  var el = document.getElementById("noteList"); if(!el)return;
+  if(!notes.length){
+    el.innerHTML='<div style="padding:20px;text-align:center;color:var(--gm);font-size:12px">No notes yet.<br>Click + New to add one.</div>';
+    return;
+  }
+  el.innerHTML = notes.map(function(n){
+    var active = notesCurrent&&notesCurrent.id===n.id?" style=\"background:var(--off);border-right:3px solid var(--navy)\"":"";
+    var co = n.corId?COS_ALL().find(function(x){return x.id==n.corId;}):null;
+    var preview = (n.body||"").replace(/\n/g," ").slice(0,60);
+    return '<div onclick="openNote('+n.id+')" style="padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--gl)'+active+'">'
+      +'<div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:2px">'+(n.title||"Untitled")+'</div>'
+      +(co?'<div style="font-size:10px;color:var(--gold3);font-weight:600;margin-bottom:2px">'+co.name+'</div>':"")
+      +'<div style="font-size:11px;color:var(--gm)">'+preview+'</div>'
+    +'</div>';
+  }).join("");
+  // Populate company dropdowns
+  var sel1=document.getElementById("notesCo"); var sel2=document.getElementById("noteCoInput");
+  [sel1,sel2].forEach(function(sel){
+    if(!sel)return;
+    var cur=sel.value;
+    var opts='<option value="">No company</option>'+COS_ALL().map(function(co){return'<option value="'+co.id+'">'+co.name+'</option>';}).join("");
+    if(sel===sel1)opts='<option value="">All Companies</option>'+COS_ALL().map(function(co){return'<option value="'+co.id+'">'+co.name+'</option>';}).join("");
+    sel.innerHTML=opts; sel.value=cur;
+  });
+}
+
+function openNote(id){
+  var notes=getNotes(); var n=notes.find(function(x){return x.id===id;});if(!n)return;
+  notesCurrent=n;
+  document.getElementById("noteEditorEmpty").style.display="none";
+  var ed=document.getElementById("noteEditorContent");ed.style.display="flex";
+  document.getElementById("noteTitleInput").value=n.title||"";
+  document.getElementById("noteBodyInput").value=n.body||"";
+  document.getElementById("noteCoInput").value=n.corId||"";
+  document.getElementById("noteAutoSaveStatus").textContent="";
+  renderNoteList();
+}
+
+function newNote(){
+  var notes=getNotes();
+  var n={id:Date.now(),title:"New Note",body:"",corId:"",created:new Date().toISOString()};
+  notes.unshift(n); saveNotes(notes); renderNoteList(); openNote(n.id);
+}
+
+function autoSaveNote(){
+  if(!notesCurrent)return;
+  clearTimeout(_noteAutoSaveTimer);
+  _noteAutoSaveTimer=setTimeout(function(){
+    var notes=getNotes();
+    var idx=notes.findIndex(function(x){return x.id===notesCurrent.id;});
+    if(idx<0)return;
+    notes[idx].title=(document.getElementById("noteTitleInput")||{}).value||"Untitled";
+    notes[idx].body=(document.getElementById("noteBodyInput")||{}).value||"";
+    notes[idx].corId=(document.getElementById("noteCoInput")||{}).value||"";
+    notes[idx].updated=new Date().toISOString();
+    saveNotes(notes); notesCurrent=notes[idx];
+    var st=document.getElementById("noteAutoSaveStatus");if(st)st.textContent="Saved "+new Date().toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
+    renderNoteList();
+  },800);
+}
+
+function deleteNote(){
+  if(!notesCurrent)return;
+  if(!confirm("Delete this note?"))return;
+  var notes=getNotes().filter(function(x){return x.id!==notesCurrent.id;});
+  saveNotes(notes); notesCurrent=null;
+  document.getElementById("noteEditorEmpty").style.display="flex";
+  document.getElementById("noteEditorContent").style.display="none";
+  renderNoteList();
+}
+
+
+// ════════════════════════════════════════════════════════════════
+// FOLLOW-UPS CALENDAR
+// ════════════════════════════════════════════════════════════════
+var _fuCalYear  = new Date().getFullYear();
+var _fuCalMonth = new Date().getMonth(); // 0-based
+
+function fuCalPrev(){ _fuCalMonth--; if(_fuCalMonth<0){_fuCalMonth=11;_fuCalYear--;} renderFUCalendar(); }
+function fuCalNext(){ _fuCalMonth++; if(_fuCalMonth>11){_fuCalMonth=0;_fuCalYear++;} renderFUCalendar(); }
+
+function renderFUCalendar(){
+  var title=document.getElementById("fuCalTitle");
+  var grid=document.getElementById("fuCalGrid"); if(!grid)return;
+  var months=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  if(title)title.textContent=months[_fuCalMonth]+" "+_fuCalYear;
+
+  var fus=pGet("followups")||{};
+  var pd=getPipelineData();
+  // Build lookup: dateStr -> [{co, data}]
+  var byDate={};
+  Object.entries(fus).forEach(function(entry){
+    var corId=entry[0]; var fu=entry[1];
+    if(!fu.date)return;
+    var d=new Date(fu.date);
+    if(isNaN(d))return;
+    var key=d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
+    if(!byDate[key])byDate[key]=[];
+    var co=COS_ALL().find(function(x){return x.id==corId;});
+    if(co)byDate[key].push({co:co,fu:fu});
+  });
+
+  var today=new Date(); var todayKey=today.getFullYear()+"-"+(today.getMonth()+1)+"-"+today.getDate();
+  var firstDay=new Date(_fuCalYear,_fuCalMonth,1).getDay(); // 0=Sun
+  var daysInMonth=new Date(_fuCalYear,_fuCalMonth+1,0).getDate();
+  // Shift so Monday=0
+  var startOffset=(firstDay+6)%7;
+
+  var html='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:2px">';
+  ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].forEach(function(d){
+    html+='<div style="text-align:center;font-size:11px;font-weight:700;color:var(--ts);padding:8px 0;text-transform:uppercase;letter-spacing:.5px">'+d+'</div>';
+  });
+  html+='</div>';
+  html+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">';
+
+  // Empty cells before first day
+  for(var i=0;i<startOffset;i++){
+    html+='<div style="min-height:90px;background:rgba(0,0,0,.02);border-radius:6px"></div>';
+  }
+
+  for(var day=1;day<=daysInMonth;day++){
+    var key=_fuCalYear+"-"+(_fuCalMonth+1)+"-"+day;
+    var items=byDate[key]||[];
+    var isToday=key===todayKey;
+    var isPast=new Date(_fuCalYear,_fuCalMonth,day)<today&&!isToday;
+    var bg=isToday?"rgba(200,151,43,.08)":"#fff";
+    var border=isToday?"2px solid var(--gold)":"1.5px solid var(--gl)";
+    html+='<div style="min-height:90px;background:'+bg+';border:'+border+';border-radius:8px;padding:6px;cursor:'+(items.length?"pointer":"default")+'" onclick="fuCalDayClick(\''+key+'\')">';
+    html+='<div style="font-size:12px;font-weight:'+(isToday?"800":"600")+';color:'+(isToday?"var(--gold3)":isPast?"var(--gm)":"var(--navy)")+';margin-bottom:4px">'+day+'</div>';
+    var shown=items.slice(0,3);
+    shown.forEach(function(item){
+      var stage=pd[item.co.id]||"Cold";
+      var si=STAGES.indexOf(stage);
+      var dotColor=si<=0?"#90a4ae":si===1?"#1565c0":si===2?"#2e7d32":si===3?"#f57c00":"#6a1b9a";
+      html+='<div style="font-size:10px;font-weight:600;color:#fff;background:'+dotColor+';border-radius:4px;padding:2px 5px;margin-bottom:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis" title="'+item.co.name+' \u00b7 '+stage+'">'+item.co.name+'</div>';
+    });
+    if(items.length>3)html+='<div style="font-size:9px;color:var(--gm);font-weight:600">+' +(items.length-3)+' more</div>';
+    html+='</div>';
+  }
+
+  // Remaining empty cells
+  var totalCells=startOffset+daysInMonth;
+  var remainder=totalCells%7;
+  if(remainder>0){for(var j=0;j<7-remainder;j++)html+='<div style="min-height:90px;background:rgba(0,0,0,.02);border-radius:6px"></div>';}
+
+  html+='</div>';
+  grid.innerHTML=html;
+}
+
+function fuCalDayClick(key){
+  var fus=pGet("followups")||{};
+  var items=[];
+  Object.entries(fus).forEach(function(entry){
+    var corId=entry[0]; var fu=entry[1];
+    if(!fu.date)return;
+    var d=new Date(fu.date);
+    var k=d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
+    if(k===key){var co=COS_ALL().find(function(x){return x.id==corId;});if(co)items.push({co:co,fu:fu});}
+  });
+  if(!items.length)return;
+  var names=items.map(function(x){return x.co.name+(x.fu.contact?" ("+x.fu.contact+")":"");}).join("\n");
+  var date=new Date(key.replace(/(\d+)-(\d+)-(\d+)/,"$1/$2/$3")).toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+  alert(date+"\n\nFollow-ups scheduled:\n"+names);
 }
 
 
