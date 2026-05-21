@@ -1084,29 +1084,36 @@ function saveNewProfile(){
 }
 
 function enterApp(profile){
-  currentProfile=profile;
-  document.getElementById("profileScreen").style.display="none";
-  document.getElementById("mainApp").style.display="block";
-  document.getElementById("navAv").className="nav-av c"+profile.color;
-  document.getElementById("navAv").textContent=profile.name.slice(0,2).toUpperCase();
-  document.getElementById("navName").textContent=profile.name;
-  document.getElementById("navTitle").textContent=profile.title||"BD Associate";
-  const h=new Date().getHours();
-  const greetEl=document.getElementById("dashGreet");if(greetEl)greetEl.textContent=h<12?"Good morning \u2600\ufe0f":h<17?"Good afternoon \u{1F31E}":"Good evening \ud83c\udf19";
-  document.getElementById("dashSub").textContent=profile.name+" \u00b7 Mohr Partners BD Command Center";
-  emailQueue=[];openCORId=null;aiHistory=[];notesCurrent=null;
-  loadSettings();loadTheme();
-  // Migrate any globally-saved API key into this profile
-  var _gak=localStorage.getItem("global_apikey");
-  if(_gak&&!pGet("apikey")){pSet("apikey",_gak);}
-  // Pre-fill profile screen key input with current key (masked)
-  var _psInp=document.getElementById("ps-apikey");if(_psInp)_psInp.value="";
-  var _psSt=document.getElementById("ps-apiStatus");
-  if(_psSt&&pGet("apikey")){_psSt.style.color="rgba(100,220,100,.8)";_psSt.textContent="✓ API key saved for this profile";}
-  const fab=document.getElementById("aiFab");if(fab)fab.style.display="flex";
-  renderAll();
-  autoReconnectFirebase();
-  setTimeout(scheduleAutoNews, 6000); // auto-refresh stale news in background
+  try{
+    currentProfile=profile;
+    document.getElementById("profileScreen").style.display="none";
+    document.getElementById("mainApp").style.display="block";
+    document.getElementById("navAv").className="nav-av c"+profile.color;
+    document.getElementById("navAv").textContent=profile.name.slice(0,2).toUpperCase();
+    document.getElementById("navName").textContent=profile.name;
+    document.getElementById("navTitle").textContent=profile.title||"BD Associate";
+    var h=new Date().getHours();
+    var greetEl=document.getElementById("dashGreet");
+    if(greetEl)greetEl.textContent=h<12?"Good morning":h<17?"Good afternoon":"Good evening";
+    var subEl=document.getElementById("dashSub");
+    if(subEl)subEl.textContent=profile.name+" · Mohr Partners BD Command Center";
+    emailQueue=[];openCORId=null;aiHistory=[];notesCurrent=null;
+    try{loadSettings();}catch(le){console.warn("loadSettings:",le);}
+    try{loadTheme();}catch(te){console.warn("loadTheme:",te);}
+    var _gak=localStorage.getItem("global_apikey");
+    if(_gak&&!pGet("apikey")){pSet("apikey",_gak);}
+    var _psInp=document.getElementById("ps-apikey");if(_psInp)_psInp.value="";
+    var _psSt=document.getElementById("ps-apiStatus");
+    if(_psSt&&pGet("apikey")){_psSt.style.color="rgba(100,220,100,.8)";_psSt.textContent="✓ API key saved";}
+    var fab=document.getElementById("aiFab");if(fab)fab.style.display="flex";
+    try{renderAll();}catch(re){console.error("renderAll:",re);}
+    try{autoReconnectFirebase();}catch(fe){console.warn("Firebase:",fe);}
+    setTimeout(scheduleAutoNews,6000);
+  }catch(err){
+    document.getElementById("profileScreen").style.display="none";
+    document.getElementById("mainApp").style.display="block";
+    document.getElementById("mainApp").innerHTML='<div style="padding:40px;color:#c62828;font-size:13px;font-family:monospace;background:#fff;margin:20px;border-radius:8px"><strong>Error (screenshot this):</strong><br><br>'+err.message+'<br><br>'+err.stack+'</div>';
+  }
 }
 function logout(){currentProfile=null;openCORId=null;emailQueue=[];aiHistory=[];document.getElementById("mainApp").style.display="none";document.getElementById("profileScreen").style.display="flex";renderProfileScreen()}
 
