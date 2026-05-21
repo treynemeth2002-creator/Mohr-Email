@@ -347,7 +347,7 @@ option{color:#1a2332;background:#fff}
   </div>
 </div>
 
-<div id="mainApp" style="display:none">
+<div id="mainApp" style="display:none"><div id="loginTestDiv" style="display:none;position:fixed;top:0;left:0;right:0;padding:10px;background:#c62828;color:#fff;font-size:14px;font-weight:bold;z-index:99999;text-align:center">APP LOADED - if you see this, click it to dismiss</div>
 <nav class="topnav">
   <div class="nav-brand"><div class="brand-txt">Mohr<span>Partners</span></div><div class="brand-badge">BD CENTER</div></div>
   <div class="nav-tabs">
@@ -950,7 +950,10 @@ function enterApp(profile){
   currentProfile=profile;
   // Hide profile screen, show main app
   document.getElementById("profileScreen").style.display="none";
-  document.getElementById("mainApp").style.display="block";
+  var ma=document.getElementById("mainApp");
+  ma.style.cssText="display:block !important;min-height:100vh;background:#f4f6f9";
+  var td=document.getElementById("loginTestDiv");
+  if(td){td.style.display="block";td.onclick=function(){this.style.display="none";};}
   // Set nav user info
   var av=document.getElementById("navAv");
   if(av){av.className="nav-av c"+profile.color;av.textContent=profile.name.slice(0,2).toUpperCase();}
