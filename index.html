@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mohr Partners — BD Command Center</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Mohr Partners — BD Command Center v2.1</title>
 <style>
 :root{--navy:#002855;--navy2:#003a75;--navy3:#001a38;--gold:#C8972B;--gold2:#e0aa3e;--gold3:#a07820;--white:#fff;--off:#f4f6f9;--gl:#e8ecf0;--gm:#b0bec5;--gd:#546e7a;--tp:#1a2332;--ts:#546e7a;--success:#2e7d32;--warn:#f57c00;--danger:#c62828}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -366,7 +369,6 @@ option{color:#1a2332;background:#fff}
 
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script type="module" id="firebaseModule"></script>
 </head>
 <body>
 
@@ -1084,36 +1086,36 @@ function saveNewProfile(){
 }
 
 function enterApp(profile){
-  try{
-    currentProfile=profile;
-    document.getElementById("profileScreen").style.display="none";
-    document.getElementById("mainApp").style.display="block";
-    document.getElementById("navAv").className="nav-av c"+profile.color;
-    document.getElementById("navAv").textContent=profile.name.slice(0,2).toUpperCase();
-    document.getElementById("navName").textContent=profile.name;
-    document.getElementById("navTitle").textContent=profile.title||"BD Associate";
-    var h=new Date().getHours();
-    var greetEl=document.getElementById("dashGreet");
-    if(greetEl)greetEl.textContent=h<12?"Good morning":h<17?"Good afternoon":"Good evening";
-    var subEl=document.getElementById("dashSub");
-    if(subEl)subEl.textContent=profile.name+" · Mohr Partners BD Command Center";
-    emailQueue=[];openCORId=null;aiHistory=[];notesCurrent=null;
-    try{loadSettings();}catch(le){console.warn("loadSettings:",le);}
-    try{loadTheme();}catch(te){console.warn("loadTheme:",te);}
-    var _gak=localStorage.getItem("global_apikey");
-    if(_gak&&!pGet("apikey")){pSet("apikey",_gak);}
-    var _psInp=document.getElementById("ps-apikey");if(_psInp)_psInp.value="";
-    var _psSt=document.getElementById("ps-apiStatus");
-    if(_psSt&&pGet("apikey")){_psSt.style.color="rgba(100,220,100,.8)";_psSt.textContent="✓ API key saved";}
-    var fab=document.getElementById("aiFab");if(fab)fab.style.display="flex";
-    try{renderAll();}catch(re){console.error("renderAll:",re);}
-    try{autoReconnectFirebase();}catch(fe){console.warn("Firebase:",fe);}
-    setTimeout(scheduleAutoNews,6000);
-  }catch(err){
-    document.getElementById("profileScreen").style.display="none";
-    document.getElementById("mainApp").style.display="block";
-    document.getElementById("mainApp").innerHTML='<div style="padding:40px;color:#c62828;font-size:13px;font-family:monospace;background:#fff;margin:20px;border-radius:8px"><strong>Error (screenshot this):</strong><br><br>'+err.message+'<br><br>'+err.stack+'</div>';
-  }
+  currentProfile=profile;
+  // Hide profile screen, show main app
+  document.getElementById("profileScreen").style.display="none";
+  document.getElementById("mainApp").style.display="block";
+  // Set nav user info
+  var av=document.getElementById("navAv");
+  if(av){av.className="nav-av c"+profile.color;av.textContent=profile.name.slice(0,2).toUpperCase();}
+  var nn=document.getElementById("navName"); if(nn)nn.textContent=profile.name;
+  var nt=document.getElementById("navTitle"); if(nt)nt.textContent=profile.title||"BD Associate";
+  // Reset state
+  emailQueue=[];openCORId=null;aiHistory=[];notesCurrent=null;
+  // Load settings/theme (silent fail)
+  try{loadSettings();}catch(e){}
+  try{loadTheme();}catch(e){}
+  // Show dashboard page
+  document.querySelectorAll(".page").forEach(function(p){p.classList.remove("on");});
+  var dp=document.getElementById("page-dashboard");
+  if(dp)dp.classList.add("on");
+  document.querySelectorAll(".ntab").forEach(function(t,i){if(i===0)t.classList.add("on");else t.classList.remove("on");});
+  // Show AI fab
+  var fab=document.getElementById("aiFab"); if(fab)fab.style.display="flex";
+  // Render everything (each wrapped so one failure doesn't stop others)
+  try{renderDashboard();}catch(e){console.error("renderDashboard",e);}
+  try{renderCORs();}catch(e){console.error("renderCORs",e);}
+  try{renderPipeMini();}catch(e){console.error("renderPipeMini",e);}
+  try{renderDashboardTouchWidget();}catch(e){console.error("renderDashboardTouchWidget",e);}
+  try{renderHotLeads();}catch(e){console.error("renderHotLeads",e);}
+  // Firebase + news (background, non-blocking)
+  try{autoReconnectFirebase();}catch(e){}
+  setTimeout(function(){try{scheduleAutoNews();}catch(e){}},6000);
 }
 function logout(){currentProfile=null;openCORId=null;emailQueue=[];aiHistory=[];document.getElementById("mainApp").style.display="none";document.getElementById("profileScreen").style.display="flex";renderProfileScreen()}
 
@@ -3219,6 +3221,14 @@ window.addEventListener("DOMContentLoaded",async()=>{
     document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#001a38;color:#fff;font-family:sans-serif;flex-direction:column;gap:16px"><h2>Mohr Partners BD Center</h2><p style="color:#f44;font-size:13px">Startup error: '+err.message+'</p><p style="color:rgba(255,255,255,.5);font-size:11px">Open browser console (F12) for details.</p></div>';
   }
   window._autoNewsScheduled = false;
+  // Fallback: if profile screen is still empty after 1 second, force render
+  setTimeout(function(){
+    var grid = document.getElementById("profilesGrid");
+    if(grid && !grid.innerHTML.trim()) {
+      console.warn("Profile grid empty - forcing render");
+      try{ renderProfileScreen(); }catch(e){ console.error(e); }
+    }
+  }, 1000);
 });
 </script>
 </div>
