@@ -1927,12 +1927,18 @@ function saveLogTouchCOR(){
   }
 
   // Move to Contacted if still Cold
-  var pd=getPipelineData();
-  if((pd[_ltcCorId]||"Cold")==="Cold"){setStageCOR(_ltcCorId,"Contacted");}
+  var pd2=getPipelineData();
+  if((pd2[_ltcCorId]||"Cold")==="Cold"){setStageCOR(_ltcCorId,"Contacted");}
+
+  // Write to Touches store so Touches tab counts it
+  var touches=getTouches();
+  touches.push({id:Date.now(),date:new Date().toISOString(),type:type,corId:_ltcCorId,company:co?co.name:"",contact:contact,notes:subject});
+  saveTouches(touches);
 
   document.getElementById("logTouchCOROverlay").style.display="none";
   renderCORs();renderDashboard();
-  showToast("Logged \u2714 Follow-up set for "+new Date(followupDate).toLocaleDateString("en-US",{month:"short",day:"numeric"}));
+  if(document.getElementById("page-touches")&&document.getElementById("page-touches").classList.contains("active"))renderTouchPage();
+  showToast("Logged ✔ Follow-up set for "+new Date(followupDate).toLocaleDateString("en-US",{month:"short",day:"numeric"}));
 }
 
 // ─── FOLLOW-UPS PAGE ────────────────────────────────────────────
